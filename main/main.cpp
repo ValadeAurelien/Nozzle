@@ -1,14 +1,19 @@
-#include "../profiler.h"
-...
+/* This is main implementation linked to main.cpp
+ *
+ * central script of the program -- almost all includes must be found below
+ *
+ *
+*/
 
 
+// ======== includes ======== 
 
+#include "main.h"
 
+// ======== implementation ========
 
-int main(int argc, char *argv[])
-{
-        def objs;
-        readargs();
-        launch_tuyere();
-        print();
+main::member{
+
 }
+
+
