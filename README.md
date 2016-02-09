@@ -1,4 +1,4 @@
 # Nozzle
 projet numérique L3
 
-Easy to use
+Easy to use: I guess I finally did it... Don't I?
