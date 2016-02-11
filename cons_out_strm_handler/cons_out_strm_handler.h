@@ -20,7 +20,7 @@
 
 // ======== interface ========
 
-class Cons_Out_Strm_handler
+class Cons_Out_Strm_Handler
 {
 
 };
