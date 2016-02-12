@@ -12,7 +12,7 @@
 
 // ======== implementation ========
 
-Arg_Interpreter::member{
+returned_type Arg_Interpreter::member{
 
 }
 

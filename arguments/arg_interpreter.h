@@ -78,12 +78,11 @@ struct arg_list {
 class Arg_Interpreter {
         public:
 		Arg_Interpreter(Usr_Interface *UI); //constructeur
-		arg_list create_arglist(string file_name); //la méthode principale pour construire une struct c++ a partir d'un ficher text
-                void create_argfile_from_cons(); //
+		arg_list create_arglist(); //la méthode principale
+                void create_argfile_from_cons();
         private:
-		Usr_Interface *UI;
-                const string PATH = "./argfiles";
-};
+		const string PATH = "./argfiles";
+};              Usr_Interface *UI;
 
 #endif
 

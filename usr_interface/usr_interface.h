@@ -9,8 +9,8 @@
 
 // ========= include guards ========
 
-#ifndef __CONS_OUT_STRM_HANDLER_IS_INCLUDED__ 
-#define __CONS_OUT_STRM_HANDLER_IS_INCLUDED__
+#ifndef __USR_INTERFACE_IS_INCLUDED__ 
+#define __USR_INTERFACE_IS_INCLUDED__
 
 // ======== obj dependencies ========
 
@@ -20,7 +20,7 @@
 
 // ======== interface ========
 
-class Cons_Out_Strm_Handler
+class Usr_Interface
 {
 
 };
