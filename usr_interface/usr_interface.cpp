@@ -1,19 +1,26 @@
 /* This is console out stream handler implementation script 
  *
- * Linked to cons_out_strm_handler.h
+ * Linked to usr_interface.h
 */
 
 
 // ======== includes ========
 
-#include "cons_out_strm_handler.h"
-#include <iostream>
+#include "usr_interface.h"
 
 
 // ======= implementation ========
 
 using namespace std;
 
-Cons_Out_Strm_Handler::member(){
+Usr_Interface::cout_str(string msg)
+{
+        cout << msg << endl;
+}
 
+string Usr_Interface::cin_str()
+{
+        string temp;
+        cin >> temp;
+        return temp;
 }

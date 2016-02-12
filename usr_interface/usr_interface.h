@@ -17,12 +17,19 @@
 
 // ======== includes ========
 
+#include <iostream>
+#include <iomanip>
+#include <string>
 
 // ======== interface ========
 
 class Usr_Interface
 {
-
+        public:
+                void cout_str(string msg);
+                string cin_str();
+        private:
+                int i;
 };
 
 #endif 
