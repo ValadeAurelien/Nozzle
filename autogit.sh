@@ -1,4 +1,2 @@
 #! /bin/bash
-exec git add . && echo "coucou"
-exec git commit -m $1
-exec git push Nozzle $2
+if [ $# -ne 2 ];then echo -e "You need to provide comment & branch name !\n   autobash.sh \"MY COMMENT\" MYBRANCH\n" ; exit 0;fi
