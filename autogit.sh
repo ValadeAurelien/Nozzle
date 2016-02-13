@@ -4,3 +4,6 @@ if [ $# -ne 2 ];then echo -e "You need to provide comment & branch name !\n   au
 COMMENT="$1"
 BRANCH=$2
 
+git add . 
+git commit -m"$COMMENT"
+git push Nozzle $BRANCH
