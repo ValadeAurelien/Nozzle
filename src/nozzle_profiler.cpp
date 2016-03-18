@@ -102,7 +102,6 @@ void Nozzle_Profiler::set_init_conditions()
 
 void Nozzle_Profiler::save_mesh_grid()
 {
-        this->DM->create_datafile_from_mesh_grid(&(this->mesh_grid_2));
         this->DM->create_datafile_from_mesh_grid(&(this->mesh_grid_1));
 }
 
