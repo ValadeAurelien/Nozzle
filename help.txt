@@ -1,0 +1,22 @@
+compiler:
+
+g++ -std=c++11 main.cpp src/* -o nozzle
+
+
+
+executer:
+
+./nozzle --run-config segment1.txt
+
+
+
+utiliser vim
+
+pour pouvoir écrire: appuyer sur i (ca écrit insertion en bas à gauche)
+pour arreter d'écrire: echape
+pour enregistrer: ne pas etre en mode insertion puis :w
+pour quitter: ne pas non plus etre en mode insertion puis :q
+-----> on peut aussi :wq pour tout faire d'un coup
+
+
+au début c'est chiant tkt ! ;)
