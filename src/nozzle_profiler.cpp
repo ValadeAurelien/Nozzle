@@ -123,6 +123,17 @@ void Nozzle_Profiler::set_init_conditions()
 
                 }
         }
+        
+        for (i=0; i<this->arglist_pt->x_size; i++) {
+                for (y=0; y<this->arglist_pt->y_size; y++) {
+                        if (this->mesh_grid_1[i][j].is_wall) {
+                                this->mesh_grid_1[i][j].speed[1]=0
+                                this->mesh_grid_1[i][j].speed[0]=0
+                                this->mesh_grid_1[i][j].temperature=300
+                        }
+                }
+        }
+        
         for (i=0; i<this->arglist_pt->x_size; i++){
                 for (j=0; j<this->arglist_pt->y_size; j++){
                         this->mesh_grid_2[i][j].pressure = this->mesh_grid_1[i][j].pressure ;
