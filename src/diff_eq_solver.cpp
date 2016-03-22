@@ -78,7 +78,7 @@ data_t Diff_Eq_Solver::deriv2_x_temp(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        ((1-mesh_grid_1[i+1][j].is_wall)*(mesh_grid_1[i+1][j].temperature-mesh_grid_1[i][j].temperature) - (1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i][j].temperature-mesh_grid_1[i-1][j].temperature))
+        (mesh_grid_1[i+1][j].temperature-2*mesh_grid_1[i][j].temperature+mesh_grid_1[i-1][j].temperature)
         / pow(this->arglist_pt->space_step,2)
         );
 }
@@ -87,7 +87,7 @@ data_t Diff_Eq_Solver::deriv2_y_temp(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        ((1-mesh_grid_1[i][j+1].is_wall)*(mesh_grid_1[i][j+1].temperature-mesh_grid_1[i][j].temperature) - (1-mesh_grid_1[i][j-1].is_wall)*(mesh_grid_1[i][j].temperature-mesh_grid_1[i][j-1].temperature))
+        (mesh_grid_1[i][j+1].temperature-2*mesh_grid_1[i][j].temperature+mesh_grid_1[i][j-1].temperature)
         / pow(this->arglist_pt->space_step,2)
         );
 }
@@ -114,8 +114,8 @@ data_t Diff_Eq_Solver::deriv_x_rhovx(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        ((1-mesh_grid_1[i+1][j].is_wall)*(mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0]-mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0])+(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0]))
-        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)))
+        (mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0]-mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0])
+        / (2*this->arglist_pt->space_step)
         );
 }
 
@@ -123,8 +123,8 @@ data_t Diff_Eq_Solver::deriv_y_rhovx(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        ((1-mesh_grid_1[i][j+1].is_wall)*(mesh_grid_1[i][j+1].vol_mass*mesh_grid_1[i][j+1].speed[0]-mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0])+(1-mesh_grid_1[i][j-1].is_wall)*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-mesh_grid_1[i][j-1].vol_mass*mesh_grid_1[i][j-1].speed[0]))
-        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i][j+1].is_wall)*(1-mesh_grid_1[i][j-1].is_wall)))
+        (mesh_grid_1[i][j+1].vol_mass*mesh_grid_1[i][j+1].speed[0]-mesh_grid_1[i][j-1].vol_mass*mesh_grid_1[i][j-1].speed[0])
+        / (this->arglist_pt->space_step*2)
         );
 }
 
@@ -132,8 +132,8 @@ data_t Diff_Eq_Solver::deriv_x_rhovy(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        ((1-mesh_grid_1[i+1][j].is_wall)*(mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[1]-mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1])+(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[1]))
-        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)))
+        (mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[1]-mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[1])
+        / (this->arglist_pt->space_step*2)
         );
 }
 
@@ -141,8 +141,8 @@ data_t Diff_Eq_Solver::deriv_y_rhovy(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        ((1-mesh_grid_1[i][j+1].is_wall)*(mesh_grid_1[i][j+1].vol_mass*mesh_grid_1[i][j+1].speed[1]-mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1])+(1-mesh_grid_1[i][j-1].is_wall)*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-mesh_grid_1[i][j-1].vol_mass*mesh_grid_1[i][j-1].speed[1]))
-        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i][j+1].is_wall)*(1-mesh_grid_1[i][j-1].is_wall)))
+        (mesh_grid_1[i][j+1].vol_mass*mesh_grid_1[i][j+1].speed[1]-mesh_grid_1[i][j-1].vol_mass*mesh_grid_1[i][j-1].speed[1])
+        / (this->arglist_pt->space_step*2)
         );
 }
 
@@ -150,8 +150,8 @@ data_t Diff_Eq_Solver::deriv_x_prestotPGvx(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        ((1-mesh_grid_1[i+1][j].is_wall)*(mesh_grid_1[i+1][j].speed[0]*pres_tot_PG(i+1,j)-mesh_grid_1[i][j].speed[0]*pres_tot_PG(i,j))+(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i][j].speed[0]*pres_tot_PG(i,j)-mesh_grid_1[i-1][j].speed[0]*pres_tot_PG(i-1,j)))
-        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)))
+        (mesh_grid_1[i+1][j].speed[0]*pres_tot_PG(i+1,j)-mesh_grid_1[i-1][j].speed[0]*pres_tot_PG(i-1,j))
+        / (this->arglist_pt->space_step*2)
         );
 }
 
@@ -159,8 +159,8 @@ data_t Diff_Eq_Solver::deriv_y_prestotPGvy(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        ((1-mesh_grid_1[i][j+1].is_wall)*(mesh_grid_1[i][j+1].speed[1]*pres_tot_PG(i,j+1)-mesh_grid_1[i][j].speed[1]*pres_tot_PG(i,j))+(1-mesh_grid_1[i][j-1].is_wall)*(mesh_grid_1[i][j].speed[1]*pres_tot_PG(i,j)-mesh_grid_1[i][j-1].speed[1]*pres_tot_PG(i,j-1)))
-        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i][j+1].is_wall)*(1-mesh_grid_1[i][j-1].is_wall)))
+        (mesh_grid_1[i][j+1].speed[1]*pres_tot_PG(i,j+1)-mesh_grid_1[i][j-1].speed[1]*pres_tot_PG(i,j-1))
+        / (this->arglist_pt->space_step*2)
         );
 }
 
@@ -168,8 +168,8 @@ data_t Diff_Eq_Solver::deriv_r_prestotPGrvr(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        -((1-mesh_grid_1[i+1][j].is_wall)*(r(i+1)*mesh_grid_1[i+1][j].speed[0]*pres_tot_PG(i+1,j)-r(i)*mesh_grid_1[i][j].speed[0]*pres_tot_PG(i,j))+(1-mesh_grid_1[i-1][j].is_wall)*(r(i)*mesh_grid_1[i][j].speed[0]*pres_tot_PG(i,j)-r(i-1)*mesh_grid_1[i-1][j].speed[0]*pres_tot_PG(i-1,j)))
-        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)))
+        -(r(i+1)*mesh_grid_1[i+1][j].speed[0]*pres_tot_PG(i+1,j)-r(i-1)*mesh_grid_1[i-1][j].speed[0]*pres_tot_PG(i-1,j))
+        / (this->arglist_pt->space_step*2)
         );
 }
 
@@ -177,8 +177,8 @@ data_t Diff_Eq_Solver::deriv_r_temp(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        ((1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i-1][j].temperature-mesh_grid_1[i][j].temperature)+(1-mesh_grid_1[i+1][j].is_wall)*(mesh_grid_1[i][j].temperature-mesh_grid_1[i+1][j].temperature))
-        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)))
+        (mesh_grid_1[i-1][j].temperature-mesh_grid_1[i+1][j].temperature)
+        / (this->arglist_pt->space_step*2)
         );
 }
 
@@ -186,8 +186,8 @@ data_t Diff_Eq_Solver::deriv_x_prestotVDWvx(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        ((1-mesh_grid_1[i+1][j].is_wall)*(mesh_grid_1[i+1][j].speed[0]*pres_tot_VDW(i+1,j)-mesh_grid_1[i][j].speed[0]*pres_tot_VDW(i,j))+(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i][j].speed[0]*pres_tot_VDW(i,j)-mesh_grid_1[i-1][j].speed[0]*pres_tot_VDW(i-1,j)))
-        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)))
+        (mesh_grid_1[i+1][j].speed[0]*pres_tot_VDW(i+1,j)-mesh_grid_1[i-1][j].speed[0]*pres_tot_VDW(i-1,j))
+        / (this->arglist_pt->space_step*2)
         );
 }
 
@@ -195,8 +195,8 @@ data_t Diff_Eq_Solver::deriv_y_prestotVDWvy(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
 
         return(
-        ((1-mesh_grid_1[i][j+1].is_wall)*(mesh_grid_1[i][j+1].speed[1]*pres_tot_VDW(i,j+1)-mesh_grid_1[i][j].speed[1]*pres_tot_VDW(i,j))+(1-mesh_grid_1[i][j-1].is_wall)*(mesh_grid_1[i][j].speed[1]*pres_tot_VDW(i,j)-mesh_grid_1[i][j-1].speed[1]*pres_tot_VDW(i,j-1)))
-        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i][j+1].is_wall)*(1-mesh_grid_1[i][j-1].is_wall)))
+        (mesh_grid_1[i][j+1].speed[1]*pres_tot_VDW(i,j+1)-mesh_grid_1[i][j-1].speed[1]*pres_tot_VDW(i,j-1))
+        / (this->arglist_pt->space_step*2)
         );
 }
 
@@ -204,8 +204,8 @@ data_t Diff_Eq_Solver::deriv_r_prestotVDWrvr(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        -((1-mesh_grid_1[i+1][j].is_wall)*(r(i+1)*mesh_grid_1[i+1][j].speed[0]*pres_tot_VDW(i+1,j)-r(i)*mesh_grid_1[i][j].speed[0]*pres_tot_VDW(i,j))+(1-mesh_grid_1[i-1][j].is_wall)*(r(i)*mesh_grid_1[i][j].speed[0]*pres_tot_VDW(i,j)-r(i-1)*mesh_grid_1[i-1][j].speed[0]*pres_tot_VDW(i-1,j)))
-        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)))
+        -(r(i+1)*mesh_grid_1[i+1][j].speed[0]*pres_tot_VDW(i+1,j)-r(i-1)*mesh_grid_1[i-1][j].speed[0]*pres_tot_VDW(i-1,j))
+        / (this->arglist_pt->space_step*2)
         );
 }
 
@@ -217,8 +217,8 @@ data_t Diff_Eq_Solver::deriv_r_rrhovr(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        ((1-mesh_grid_1[i-1][j].is_wall)*(r(i-1)*mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0]-r(i)*mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0])+(1-mesh_grid_1[i+1][j].is_wall)*(r(i)*mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-r(i+1)*mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0]))
-        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i][j].is_wall)*(1-mesh_grid_1[i][j].is_wall)))
+        (r(i-1)*mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0]-r(i+1)*mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0])
+        / (this->arglist_pt->space_step*2)
         );
 }
 
