@@ -12,6 +12,7 @@
 #include "../include/usr_interface.h"
 #include "../include/data_mapper.h"
 #include <cmath>
+
 // ======== implementation ========
 
 
@@ -96,8 +97,9 @@ void Nozzle_Profiler::set_init_conditions()
         middle_v_mass = (atmo_v_mass * (this->arglist_pt->y_size -1 - j) + chbr_v_mass * j)/(this->arglist_pt->y_size -1);
         middle_speed = (atmo_speed * (this->arglist_pt->y_size -1 - j) + chbr_speed * j)/(this->arglist_pt->y_size -1);
 
+
         for (j=middle; j<this->arglist_pt->y_size;j++){
-                for(i=0;(not (this->mesh_grid_1[i+1][j].is_wall)); i++){
+                for(i=0;(not (this->mesh_grid_1[i][j].is_wall)); i++){
 
                         this->mesh_grid_1[i][j].pressure = (middle_press * (this->arglist_pt->y_size -1 - j) 
                                                             + atmo_press * (j-middle))/(this->arglist_pt->y_size -1 - middle);
@@ -111,7 +113,20 @@ void Nozzle_Profiler::set_init_conditions()
                         this->mesh_grid_1[i][j].speed[1] = (middle_speed * (this->arglist_pt->y_size -1 - j) 
                                                             + atmo_speed * (j-middle))/(this->arglist_pt->y_size -1 - middle);
                 }
+                for(i=i;this->mesh_grid_1[i][j].is_wall; i++){
 
+                        this->mesh_grid_1[i][j].pressure = (middle_press * (this->arglist_pt->y_size -1 - j) 
+                                                            + atmo_press * (j-middle))/(this->arglist_pt->y_size -1 - middle);
+                        
+                        this->mesh_grid_1[i][j].temperature = (middle_temp * (this->arglist_pt->y_size -1 - j) 
+                                                            + atmo_temp * (j-middle))/(this->arglist_pt->y_size -1 - middle);
+                        
+                        this->mesh_grid_1[i][j].vol_mass = (middle_v_mass * (this->arglist_pt->y_size -1 - j) 
+                                                            + atmo_v_mass * (j-middle))/(this->arglist_pt->y_size -1 - middle);
+                        
+                        this->mesh_grid_1[i][j].speed[1] = (middle_speed * (this->arglist_pt->y_size -1 - j) 
+                                                            + atmo_speed * (j-middle))/(this->arglist_pt->y_size -1 - middle);
+                }
                 for(i=i; i<this->arglist_pt->x_size;i++){
                         this->mesh_grid_1[i][j].pressure = (atmo_press * (this->arglist_pt->y_size -1 - j) + chbr_press * j)/(this->arglist_pt->y_size -1);
                         
@@ -134,7 +149,7 @@ void Nozzle_Profiler::set_init_conditions()
         }
         
         for (i=0; i<this->arglist_pt->x_size; i++){
-                for (j=0; j<this->arglist_pt->y_size; j++){
+                for (j=middle; j<this->arglist_pt->y_size; j++){
                         this->mesh_grid_2[i][j].pressure = this->mesh_grid_1[i][j].pressure ;
                         this->mesh_grid_2[i][j].temperature = this->mesh_grid_1[i][j].temperature ;
                         this->mesh_grid_2[i][j].vol_mass = this->mesh_grid_1[i][j].vol_mass ;
@@ -269,8 +284,15 @@ int Nozzle_Profiler::segment(int a_abs, int a_ord, int b_abs, int b_ord, int x_a
 void Nozzle_Profiler::init_profile_segment()
 {
         this->UI->cout_str("NP-> initializing segment profile...");
+<<<<<<< HEAD
         register int a,i,j;
         for (a=0; a<this->arglist_pt->nozzle_fitting_init_arg.segment.nb_pts -1 ; a++){
+=======
+        register int a,j,i_new, i_mem, i;
+        i_mem = this->arglist_pt->x_size - this->arglist_pt->nozzle_fitting_init_arg.segment.ordinates[0];
+
+        for (a=0; a<this->arglist_pt->nozzle_fitting_init_arg.segment.nb_pts -1; a++){
+>>>>>>> 2d2c513253b02a50fdbf8dbe52d76f6c9a9858d3
                 for (j=this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[a]; j<this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[a+1];j++){
                         i = this->arglist_pt->x_size - this->segment(this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[a],
                                           this->arglist_pt->nozzle_fitting_init_arg.segment.ordinates[a],

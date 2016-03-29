@@ -78,7 +78,7 @@ data_t Diff_Eq_Solver::deriv2_x_temp(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        (mesh_grid_1[i+1][j].temperature-2*mesh_grid_1[i][j].temperature+mesh_grid_1[i-1][j].temperature)
+        (1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i+1][j].temperature-2*mesh_grid_1[i][j].temperature+mesh_grid_1[i-1][j].temperature)
         / pow(this->arglist_pt->space_step,2)
         );
 }
@@ -87,7 +87,7 @@ data_t Diff_Eq_Solver::deriv2_y_temp(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        (mesh_grid_1[i][j+1].temperature-2*mesh_grid_1[i][j].temperature+mesh_grid_1[i][j-1].temperature)
+        (1-mesh_grid_1[i][j+1].is_wall)*(1-mesh_grid_1[i][j-1].is_wall)*(mesh_grid_1[i][j+1].temperature-2*mesh_grid_1[i][j].temperature+mesh_grid_1[i][j-1].temperature)
         / pow(this->arglist_pt->space_step,2)
         );
 }
@@ -177,7 +177,7 @@ data_t Diff_Eq_Solver::deriv_r_temp(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        (mesh_grid_1[i-1][j].temperature-mesh_grid_1[i+1][j].temperature)
+        (1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i-1][j].temperature-mesh_grid_1[i+1][j].temperature)
         / (this->arglist_pt->space_step*2)
         );
 }
