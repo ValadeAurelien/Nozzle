@@ -96,8 +96,8 @@ data_t Diff_Eq_Solver::deriv_x_pres(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        (1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i+1][j].pressure-mesh_grid_1[i-1][j].pressure)
-        / (this->arglist_pt->space_step*2)
+        ((1-mesh_grid_1[i+1][j].is_wall)*(mesh_grid_1[i+1][j].pressure-mesh_grid_1[i][j].pressure)+(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i][j].pressure-mesh_grid_1[i-1][j].pressure) )
+        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)))
         );
 }
 
@@ -105,8 +105,8 @@ data_t Diff_Eq_Solver::deriv_y_pres(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        (1-mesh_grid_1[i][j+1].is_wall)*(1-mesh_grid_1[i][j-1].is_wall)*(mesh_grid_1[i][j+1].pressure-mesh_grid_1[i][j-1].pressure)
-        / (this->arglist_pt->space_step*2)
+        ((1-mesh_grid_1[i][j+1].is_wall)*(mesh_grid_1[i][j+1].pressure-mesh_grid_1[i][j].pressure)+(1-mesh_grid_1[i][j-1].is_wall)*(mesh_grid_1[i][j].pressure-mesh_grid_1[i][j-1].pressure) )
+        / (this->arglist_pt->space_step*(1+(1-mesh_grid_1[i][j+1].is_wall)*(1-mesh_grid_1[i][j-1].is_wall)))
         );
 }
 

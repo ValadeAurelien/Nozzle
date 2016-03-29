@@ -269,55 +269,23 @@ int Nozzle_Profiler::segment(int a_abs, int a_ord, int b_abs, int b_ord, int x_a
 void Nozzle_Profiler::init_profile_segment()
 {
         this->UI->cout_str("NP-> initializing segment profile...");
-        register int a,j,i_new, i_mem, i;
-        i_mem = this->arglist_pt->nozzle_fitting_init_arg.segment.ordinates[0];
-
+        register int a,i,j;
         for (a=0; a<this->arglist_pt->nozzle_fitting_init_arg.segment.nb_pts -1 ; a++){
                 for (j=this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[a]; j<this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[a+1];j++){
-                        i_new = this->arglist_pt->x_size - this->segment(this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[a],
+                        i = this->arglist_pt->x_size - this->segment(this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[a],
                                           this->arglist_pt->nozzle_fitting_init_arg.segment.ordinates[a],
                                           this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[a+1],
                                           this->arglist_pt->nozzle_fitting_init_arg.segment.ordinates[a+1],j);
-                        this->mesh_grid_1[i_new][j].is_wall = true;
-                        this->mesh_grid_2[i_new][j].is_wall = true;
-                        
-                        if (i_new > i_mem){
-                                for (i=i_new; i>i_mem; i--){
-                                        this->mesh_grid_1[i][j-1].is_wall = true;
-                                        this->mesh_grid_2[i][j-1].is_wall = true;
-                                }
-                        }
-                        if (i_new < i_mem){
-                                for (i=i_new; i<i_mem; i++){
-                                        this->mesh_grid_1[i][j-1].is_wall = true;
-                                        this->mesh_grid_2[i][j-1].is_wall = true;
-                                }
-                        }
-
-                        i_mem = i_new;
+                        this->mesh_grid_1[i][j].is_wall = true;
+                        this->mesh_grid_2[i][j].is_wall = true;
                 }
         }
 
         j = this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[this->arglist_pt->nozzle_fitting_init_arg.segment.nb_pts -1];
-        i_new = this->arglist_pt->x_size - this->arglist_pt->nozzle_fitting_init_arg.segment.ordinates[this->arglist_pt->nozzle_fitting_init_arg.segment.nb_pts -1];
+        i = this->arglist_pt->x_size - this->arglist_pt->nozzle_fitting_init_arg.segment.ordinates[this->arglist_pt->nozzle_fitting_init_arg.segment.nb_pts -1];
         
         this->mesh_grid_1[i][j].is_wall = true;
         this->mesh_grid_2[i][j].is_wall = true;
-
-        if (i_new > i_mem){
-                for (i=i_new; i>i_mem; i--){
-                        this->mesh_grid_1[i][j-1].is_wall = true;
-                        this->mesh_grid_2[i][j-1].is_wall = true;
-                }
-        }
-        if (i_new < i_mem){
-                for (i=i_new; i<i_mem; i++){
-                        this->mesh_grid_1[i][j-1].is_wall = true;
-                        this->mesh_grid_2[i][j-1].is_wall = true;
-                }
-        }
-
-
 }
 
 void Nozzle_Profiler::profile_segment()
