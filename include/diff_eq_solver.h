@@ -58,6 +58,9 @@ class Diff_Eq_Solver
                 void update_temp_VDW_cyl(int i, int j);//mise à jour de la température VDW en cyl
                 void update_pres_VDW(int i, int j);//mise à jour de la pression Van der Waals
                 
+                //le calcul de la poussée enfin !
+                void thrust_saver(); //enregistre les valeurs de la poussée dans un fichier txt
+                
                 //quelques fonctions pour clarifier le bazar
                 data_t speed2(int i, int j, int k);//la norme au carré de la vitesse
                 data_t r(int i);//définit la coordonnée radiale r en fonction de i l'ordonnée dans le tableau
