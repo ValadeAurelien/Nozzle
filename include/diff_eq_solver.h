@@ -72,6 +72,8 @@ class Diff_Eq_Solver
                 data_t deriv_y_rhovz(int i, int j);//dérivée par rapport à y de rho*v_z
                 data_t deriv2_x_temp(int i, int j);//dérivée seconde de la température par rapport à x
                 data_t deriv2_y_temp(int i, int j);//dérivée seconde de la température par rapport à y
+                data_t deriv_x_temp(int i, int j);
+                data_t deriv_y_temp(int i, int j);
                 data_t deriv_r_temp(int i, int j);//dérivée radiale de la température
                 data_t pres_tot_PG(int i, int j);//en fait c'est rho*e+P
                 data_t en_tot_PG(int i, int j);//en fait c'est e l'énergie massique
