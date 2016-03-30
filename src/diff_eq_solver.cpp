@@ -561,8 +561,6 @@ void Diff_Eq_Solver::calc_iteration_PG_cart() {
    mesh_grid_t *temp_point = this->mesh_grid_pt2;
    this->mesh_grid_pt2= this->mesh_grid_pt1;
    this->mesh_grid_pt1 = temp_point; //échange des deux pointeurs
-   
-   this->thrust_saver();
 }
 
 void Diff_Eq_Solver::calc_iteration_PG_cyl() {
