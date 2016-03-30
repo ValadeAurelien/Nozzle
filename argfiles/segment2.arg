@@ -4,11 +4,7 @@ chamber_length = 20
 noozle_length = 40
 time_step = 0.000001
 space_step = 0.01
-<<<<<<< HEAD:argfiles/segment2.txt
-iter_number_solver = 1
-=======
 iter_number_solver = 00
->>>>>>> 2d2c513253b02a50fdbf8dbe52d76f6c9a9858d3:argfiles/segment2.arg
 iter_number_profiler = 1
 datafile_name = segment2.data
 nozzle_fitting_algo = 2
@@ -34,7 +30,7 @@ thermal_conduction = true
 lambda = 0.6
 mol_mass = .018
 dyn_visc = 0.00001
-init_chamber_pressure = 1000000
+init_chamber_pressure = 1847000
 init_chamber_temperature = 4000
 init_chamber_vol_mass = 1
 init_chamber_speed = -1

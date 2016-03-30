@@ -16,7 +16,7 @@
 #include <fstream>
 #include <iomanip>
 
-#define WIDTH 12
+#define WIDTH 18
 #define PRECISION 7
 
 // ======== implementation ========
