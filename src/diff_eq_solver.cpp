@@ -516,6 +516,8 @@ void Diff_Eq_Solver::update_pres_PG(int i, int j) { //mise à jour de la pressio
 }
 
 void Diff_Eq_Solver::thrust_saver() {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+	
 	data_t thrust = 0.;
 	for (int i =0;i<this->arglist_pt->x_size;i++) {
 		thrust+=-mesh_grid_1[i][0].speed[0]*pow(this->arglist_pt->space_step,2);
