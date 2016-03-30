@@ -86,7 +86,26 @@ class Diff_Eq_Solver
                 data_t deriv_y_prestotVDWvy(int i, int j);//pareil pour VDW
                 data_t deriv_r_prestotVDWrvr(int i, int j);//pareil pour VDW
                 data_t deriv_r_rrhovr(int i, int j);//tout est dans le nom
-                
+                data_t deriv_x_vx(int i, int j);
+                data_t deriv_y_vx(int i, int j);
+                data_t deriv_x_vy(int i, int j);
+                data_t deriv_y_vy(int i, int j);
+                data_t mol_stress_xy(int i, int j);
+                data_t mol_stress_xx(int i, int j);
+                data_t mol_stress_yy(int i, int j);
+                data_t strain_xy(int i, int j);
+                data_t strain_xx(int i, int j);
+                data_t strain_yy(int i, int j);
+                data_t deriv_x_tauxx(int i, int j);
+                data_t deriv_x_tauyx(int i, int j);
+                data_t deriv_y_tauyy(int i, int j);
+                data_t deriv_y_tauxy(int i, int j);
+                data_t diver_vtau(int i, int j);
+                data_t vtaux(int i, int j);
+                data_t vtauy(int i, int j);
+                data_t deriv_x_vtaux(int i, int j);
+                data_t deriv_y_vtauy(int i, int j);
+                bool is_in(int i, int j);
         
         private:
                 Usr_Interface *UI; //pointeur vers l'object d'interface utilisateur
