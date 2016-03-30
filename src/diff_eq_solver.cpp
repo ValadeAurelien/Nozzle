@@ -301,7 +301,7 @@ data_t Diff_Eq_Solver::strain_yy(int i, int j) {
 
 data_t Diff_Eq_Solver::deriv_y_tauxy(int i, int j) {
 	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
-	if (is_in(i,j+1) && is_in(i,j-1)) {
+	if (is_in(i,j+2) && is_in(i,j-2)) {
 		return(
 		(mol_stress_xy(i,j+1)-mol_stress_xy(i,j-1))
 		/ (this->arglist_pt->space_step*2)
@@ -314,7 +314,7 @@ data_t Diff_Eq_Solver::deriv_y_tauxy(int i, int j) {
 
 data_t Diff_Eq_Solver::deriv_x_tauxx(int i, int j) {
 	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
-	if (is_in(i+1,j) && is_in(i-1,j)) {
+	if (is_in(i+2,j) && is_in(i-2,j)) {
 		return(
 		(mol_stress_xx(i+1,j)-mol_stress_xx(i-1,j))
 		/ (this->arglist_pt->space_step*2)
@@ -327,7 +327,7 @@ data_t Diff_Eq_Solver::deriv_x_tauxx(int i, int j) {
 
 data_t Diff_Eq_Solver::deriv_y_tauyy(int i, int j) {
 	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
-	if (is_in(i,j+1) && is_in(i,j-1)) {
+	if (is_in(i,j+2) && is_in(i,j-2)) {
 		return(
 		(mol_stress_yy(i,j+1)-mol_stress_yy(i,j-1))
 		/(this->arglist_pt->space_step*2)
@@ -340,7 +340,7 @@ data_t Diff_Eq_Solver::deriv_y_tauyy(int i, int j) {
 
 data_t Diff_Eq_Solver::deriv_x_tauyx(int i, int j) {
 	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
-	if (is_in(i+1,j) && is_in(i-1,j)) {
+	if (is_in(i+2,j) && is_in(i-2,j)) {
 		return(
 		(mol_stress_xy(i+1,j)-mol_stress_xy(i-1,j))
 		/ (this->arglist_pt->space_step*2)
@@ -373,7 +373,7 @@ data_t Diff_Eq_Solver::vtauy(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_x_vtaux(int i, int j) {
-	if (is_in(i+1,j) && is_in(i-1,j)) {
+	if (is_in(i+2,j) && is_in(i-2,j)) {
 		return(
 		(vtaux(i+1,j)-vtaux(i-1,j))
 		/ (this->arglist_pt->space_step*2)
@@ -385,7 +385,7 @@ data_t Diff_Eq_Solver::deriv_x_vtaux(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_y_vtauy(int i, int j) {
-	if (is_in(i,j+1) && is_in(i,j-1)) {
+	if (is_in(i,j+2) && is_in(i,j-2)) {
 		return(
 		(vtauy(i,j+1)-vtauy(i,j-1))
 		/ (this->arglist_pt->space_step*2)
