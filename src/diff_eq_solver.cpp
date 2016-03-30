@@ -12,6 +12,8 @@
 #include "../include/nozzle_profiler.h"
 #include <cmath>
 #define R 8.314
+#include <fstream>
+#include <iostream>
 
 // ======== implementation ========
 
@@ -513,6 +515,17 @@ void Diff_Eq_Solver::update_pres_PG(int i, int j) { //mise à jour de la pressio
         }
 }
 
+void Diff_Eq_Solver::thrust_saver() {
+	data_t thrust = 0.;
+	for (int i =0;i<this->arglist_pt->x_size;i++) {
+		thrust+=-mesh_grid_1[i][0].speed[0]*pow(this->arglist_pt->space_step,2);
+	}
+	ofstream file;
+	file.open("./log.txt",ios::out);
+	file << thrust << endl;
+	file.close();
+}
+
 void Diff_Eq_Solver::copy_case(int i, int j, int k, int l) {
         mesh_grid_t &mesh_grid_2 = (*(this->mesh_grid_pt2));
         
@@ -560,6 +573,7 @@ void Diff_Eq_Solver::calc_iteration_PG_cart() {
    this->mesh_grid_pt2= this->mesh_grid_pt1;
    this->mesh_grid_pt1 = temp_point; //échange des deux pointeurs
    
+   this->thrust_saver();
 }
 
 void Diff_Eq_Solver::calc_iteration_PG_cyl() {
