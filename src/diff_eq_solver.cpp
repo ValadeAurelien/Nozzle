@@ -329,7 +329,7 @@ data_t Diff_Eq_Solver::deriv_y_tauyy(int i, int j) {
 	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
 	if (is_in(i,j+1) && is_in(i,j-1)) {
 		return(
-		(mol_stress_yy(i,j+1)-mol_stess_yy(i,j-1))
+		(mol_stress_yy(i,j+1)-mol_stress_yy(i,j-1))
 		/(this->arglist_pt->space_step*2)
 		);
 	}
