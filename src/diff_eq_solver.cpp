@@ -22,6 +22,8 @@ Diff_Eq_Solver::Diff_Eq_Solver(Usr_Interface *UI, arglist_struct *arglist_pt, me
         this->arglist_pt = arglist_pt;
         this->mesh_grid_pt1 = mesh_grid_pt1;
         this->mesh_grid_pt2 = mesh_grid_pt2;
+       	data_t thrust[this->arglist_pt->iter_number_solver];
+       	this->thrust = thrust;
 }
 
 data_t Diff_Eq_Solver::speed2(int i, int j, int k) {
@@ -515,11 +517,11 @@ void Diff_Eq_Solver::update_pres_PG(int i, int j) { //mise à jour de la pressio
         }
 }
 
-void Diff_Eq_Solver::thrust_saver(data_t thrust[this->arglist_pt->iter_number_solver]) {
+void Diff_Eq_Solver::thrust_saver() {
 	ofstream file;
 	file.open("./log.txt",ios::out);
 	for (int k=0;k<this->arglist_pt->iter_number_solver;k++) {
-		file << thrust[k] << endl;
+		file << this->thrust[k] << endl;
 	}
 	file.close();
 }
@@ -676,14 +678,13 @@ void Diff_Eq_Solver::calc_iteration_VDW_cyl() {
 
 void Diff_Eq_Solver::solve_PG_cart()
 {
-	data_t thrust[this->arglist_pt->number_iter_solver];
         register int i;
         for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
         	this->calc_iteration_PG_cart();
         	
         	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
 		for (int k =0;k<this->arglist_pt->x_size;k++) {
-		thrust[i]+=-mesh_grid_1[k][0].speed[0]*pow(this->arglist_pt->space_step,2);
+		this->thrust[i]+=-mesh_grid_1[k][0].speed[0]*pow(this->arglist_pt->space_step,2);
 		}
         }
         this->thrust_saver(thrust);
