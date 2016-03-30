@@ -515,11 +515,11 @@ void Diff_Eq_Solver::update_pres_PG(int i, int j) { //mise à jour de la pressio
         }
 }
 
-void Diff_Eq_Solver::thrust_saver() {
+void Diff_Eq_Solver::thrust_saver(data_t thrust[this->arglist_pt->iter_number_solver]) {
 	ofstream file;
 	file.open("./log.txt",ios::out);
 	for (int k=0;k<this->arglist_pt->iter_number_solver;k++) {
-		file << this->thrust[k] << endl;
+		file << thrust[k] << endl;
 	}
 	file.close();
 }
@@ -676,16 +676,17 @@ void Diff_Eq_Solver::calc_iteration_VDW_cyl() {
 
 void Diff_Eq_Solver::solve_PG_cart()
 {
+	data_t thrust[this->arglist_pt->number_iter_solver];
         register int i;
         for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
         	this->calc_iteration_PG_cart();
         	
         	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
 		for (int k =0;k<this->arglist_pt->x_size;k++) {
-		this->thrust[i]+=-mesh_grid_1[k][0].speed[0]*pow(this->arglist_pt->space_step,2);
+		thrust[i]+=-mesh_grid_1[k][0].speed[0]*pow(this->arglist_pt->space_step,2);
 		}
         }
-        this->thrust_saver();
+        this->thrust_saver(thrust);
 }
 
 void Diff_Eq_Solver::solve_VDW_cart()
