@@ -519,7 +519,7 @@ void Diff_Eq_Solver::thrust_saver() {
 	ofstream file;
 	file.open("./log.txt",ios::out);
 	for (int k=0;k<this->arglist_pt->iter_number_solver;k++) {
-		file << thrust[k] << endl;
+		file << this->thrust[k] << endl;
 	}
 	file.close();
 }
