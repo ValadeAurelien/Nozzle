@@ -115,6 +115,7 @@ class Diff_Eq_Solver
                 arglist_struct *arglist_pt; //pointeur vers la arglist
                 mesh_grid_t *mesh_grid_pt1; //pointeur vers le tableau tuyère
                 mesh_grid_t *mesh_grid_pt2;
+                data_t thrust[this->arglist_pt->iter_number_solver];
 };
 
 
