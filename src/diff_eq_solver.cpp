@@ -239,6 +239,172 @@ data_t Diff_Eq_Solver::deriv_r_rrhovr(int i, int j) {
         );
 }
 
+data_t Diff_Eq_Solver::deriv_x_vx(int i, int j) {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+	
+	return(
+	(mesh_grid_1[i+1][j].speed[0]-mesh_grid_1[i-1][j].speed[0])
+	/ (this->arglist_pt->space_step*2)
+	);
+}
+
+data_t Diff_Eq_Solver::deriv_y_vx(int i, int j) {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+
+	return(
+	(mesh_grid_1[i][j+1].speed[0]-mesh_grid_1[i][j-1].speed[0])
+	/ (this->arglist_pt->space_step*2)
+	);
+}
+
+data_t Diff_Eq_Solver::deriv_x_vy(int i, int j) {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+
+	return(
+	(mesh_grid_1[i+1][j].speed[1]-mesh_grid_1[i-1][j].speed[1])
+	/ (this->arglist_pt->space_step*2)
+	);
+}
+
+data_t Diff_Eq_Solver::deriv_y_vy(int i, int j) {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+
+	return(
+	(mesh_grid_1[i][j+1].speed[1]-mesh_grid_1[i][j-1].speed[1])
+	/ (this->arglist_pt->space_step*2)
+	);
+}
+
+data_t Diff_Eq_Solver::mol_stress_xy(int i, int j) {
+	return(2.0*this->arglist_pt->dyn_visc*strain_xy(i,j));
+}
+
+data_t Diff_Eq_Solver::mol_stress_xx(int i, int j) {
+	return(2.0*this->arglist_pt->dyn_visc*(2.0/3.0*strain_xx(i,j)-1.0/3.0*strain_yy(i,j)));
+}
+
+data_t Diff_Eq_Solver::mol_stress_yy(int i, int j) {
+	return(2.0*this->arglist_pt->dyn_visc*(2.0/3.0*strain_yy(i,j)-1.0/3.0*strain_xx(i,j)));
+}
+
+data_t Diff_Eq_Solver::strain_xy(int i, int j) {
+	return(1.0/2.0*(deriv_y_vx(i,j)+deriv_x_vy(i,j)));
+}
+
+data_t Diff_Eq_Solver::strain_xx(int i, int j) {
+	return(deriv_x_vx(i,j));
+}
+
+data_t Diff_Eq_Solver::strain_yy(int i, int j) {
+	return(deriv_y_vy(i,j));
+}
+
+data_t Diff_Eq_Solver::deriv_y_tauxy(int i, int j) {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+	if (is_in(i,j+1) && is_in(i,j-1)) {
+		return(
+		(mol_stress_xy(i,j+1)-mol_stress_xy(i,j-1))
+		/ (this->arglist_pt->space_step*2)
+		);
+	}
+	else {
+		return(0);
+	}
+}
+
+data_t Diff_Eq_Solver::deriv_x_tauxx(int i, int j) {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+	if (is_in(i+1,j) && is_in(i-1,j)) {
+		return(
+		(mol_stress_xx(i+1,j)-mol_stress_xx(i-1,j))
+		/ (this->arglist_pt->space_step*2)
+		);
+	}
+	else {
+		return(0);
+	}
+}
+
+data_t Diff_Eq_Solver::deriv_y_tauyy(int i, int j) {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+	if (is_in(i,j+1) && is_in(i,j-1)) {
+		return(
+		(mol_stress_yy(i,j+1)-mol_stess_yy(i,j-1))
+		/(this->arglist_pt->space_step*2)
+		);
+	}
+	else {
+		return(0);
+	}
+}
+
+data_t Diff_Eq_Solver::deriv_x_tauyx(int i, int j) {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+	if (is_in(i+1,j) && is_in(i-1,j)) {
+		return(
+		(mol_stress_xy(i+1,j)-mol_stress_xy(i-1,j))
+		/ (this->arglist_pt->space_step*2)
+		);
+	}
+	else {
+		return(0);
+	}
+}
+
+data_t Diff_Eq_Solver::diver_vtau(int i, int j) {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+	return(
+	deriv_x_vtaux(i,j)+deriv_y_vtauy(i,j)
+	);
+}
+
+data_t Diff_Eq_Solver::vtaux(int i, int j) {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+	return(
+	mesh_grid_1[i][j].speed[0]*mol_stress_xx(i,j)+mesh_grid_1[i][j].speed[1]*mol_stress_xy(i,j)
+	);
+}
+
+data_t Diff_Eq_Solver::vtauy(int i, int j) {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+	return(
+	mesh_grid_1[i][j].speed[0]*mol_stress_xy(i,j)+mesh_grid_1[i][j].speed[1]*mol_stress_yy(i,j)
+	);
+}
+
+data_t Diff_Eq_Solver::deriv_x_vtaux(int i, int j) {
+	if (is_in(i+1,j) && is_in(i-1,j)) {
+		return(
+		(vtaux(i+1,j)-vtaux(i-1,j))
+		/ (this->arglist_pt->space_step*2)
+		);
+	}
+	else {
+		return(0);
+	}
+}
+
+data_t Diff_Eq_Solver::deriv_y_vtauy(int i, int j) {
+	if (is_in(i,j+1) && is_in(i,j-1)) {
+		return(
+		(vtauy(i,j+1)-vtauy(i,j-1))
+		/ (this->arglist_pt->space_step*2)
+		);
+	}
+	else {
+		return(0);
+	}
+}
+
+bool Diff_Eq_Solver::is_in(int i, int j) {
+	if (i>=0 && i<this->arglist_pt->x_size && j>=0 && j<this->arglist_pt->y_size) {
+		return(true);
+	}
+	else {
+		return(false);
+	}
+}
+
 void Diff_Eq_Solver::update_vol_mass(int i, int j) { //mise à jour de la masse volumique
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         mesh_grid_t &mesh_grid_2 = (*(this->mesh_grid_pt2));
@@ -257,13 +423,22 @@ void Diff_Eq_Solver::update_vol_mass_cyl(int i, int j) {
         }
 }
 
-void Diff_Eq_Solver::update_speed_x(int i, int j) { //mise à jour de la vitesse _ x
-        mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
-        mesh_grid_t &mesh_grid_2 = (*(this->mesh_grid_pt2));
+void Diff_Eq_Solver::update_speed_x(int i, int j) {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+	mesh_grid_t &mesh_grid_2 = (*(this->mesh_grid_pt2));
+	
+	if (not(mesh_grid_1[i][j].is_wall)) {
+	mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[0]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vx(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vx(i,j)+deriv_x_pres(i,j)-deriv_y_tauxy(i,j)-deriv_x_tauxx(i,j) ) );
+	}
+}
 
-        if (not (mesh_grid_1[i][j].is_wall)) {
-                mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].speed[0]*mesh_grid_1[i][j].vol_mass - this->arglist_pt->time_step*(deriv_x_pres(i,j)+mesh_grid_1[i][j].speed[0]*deriv_x_rhovx(i,j)+mesh_grid_1[i][j].speed[1]*deriv_y_rhovx(i,j)));
-        }
+void Diff_Eq_Solver::update_speed_y(int i, int j) {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+	mesh_grid_t &mesh_grid_2 = (*(this->mesh_grid_pt2));
+
+	if (not(mesh_grid_1[i][j].is_wall)) {
+	mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[1]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vy(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vy(i,j)+deriv_y_pres(i,j)-deriv_x_tauyx(i,j)-deriv_y_tauyy(i,j)  )  );
+	}
 }
 
 void Diff_Eq_Solver::update_speed_r_cyl(int i, int j) {
@@ -272,15 +447,6 @@ void Diff_Eq_Solver::update_speed_r_cyl(int i, int j) {
         
         if (not (mesh_grid_1[i][j].is_wall) ){
                 mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-this->arglist_pt->time_step*(-deriv_x_pres(i,j)-mesh_grid_1[i][j].speed[0]*deriv_x_rhovx(i,j)+mesh_grid_1[i][j].speed[1]*deriv_y_rhovy(i,j)));
-        }
-}
-
-void Diff_Eq_Solver::update_speed_y(int i, int j) { //mise à jour de la vitesse _ y
-        mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
-        mesh_grid_t &mesh_grid_2 = (*(this->mesh_grid_pt2));
-
-        if (not (mesh_grid_1[i][j].is_wall)) {
-                mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1] - this->arglist_pt->time_step*(deriv_y_pres(i,j)+mesh_grid_1[i][j].speed[0]*deriv_x_rhovy(i,j)+mesh_grid_1[i][j].speed[1]*deriv_y_rhovy(i,j)));
         }
 }
 
@@ -320,13 +486,12 @@ void Diff_Eq_Solver::update_temp_VDW_cyl(int i, int j) {
         }
 }
 
-
 void Diff_Eq_Solver::update_temp_PG(int i, int j) { //mise à jour de la température gaz parfait
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         mesh_grid_t &mesh_grid_2 = (*(this->mesh_grid_pt2));
 
         if (not (mesh_grid_1[i][j].is_wall) ){
-                mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(deriv2_x_temp(i,j)+deriv2_y_temp(i,j))-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j))));
+                mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(deriv2_x_temp(i,j)+deriv2_y_temp(i,j))-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j)+diver_vtau(i,j))));
         }
 }
 
