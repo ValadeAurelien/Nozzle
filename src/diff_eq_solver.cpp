@@ -96,7 +96,7 @@ data_t Diff_Eq_Solver::deriv2_x_temp(int i, int j) {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         
         return(
-        (deriv_x_temp(i+1,j)-deriv(i-1,j))
+        (deriv_x_temp(i+1,j)-deriv_x_temp(i-1,j))
         / (2*this->arglist_pt->space_step)
         );
 }
