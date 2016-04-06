@@ -13,6 +13,10 @@
 
 using namespace std;
 
+// ======= includes ========
+
+#include <vector>
+
 // ========= obj dependencies ========
 
 class Usr_Interface;
@@ -21,9 +25,6 @@ struct arglist_struct;
 struct mesh_struct;
 typedef vector<vector<mesh_struct>> mesh_grid_t;
 typedef double data_t; 
-// ======= includes ========
-
-#include <vector>
 
 // ======== interface ========
 
