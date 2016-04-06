@@ -62,7 +62,7 @@ void Data_Mapper::create_datafile_from_mesh_grid(mesh_grid_t *mesh_grid_pt)
         file.close();
 }
 
-void Data_Mapper::thrust_plotter(*vector<data_t> thrust) {
+void Data_Mapper::thrust_plotter(vector<data_t> *thrust) {
         ofstream file;
         file.open("./thrust.data", ios::out);
         for (int k=0; k<thrust.size(),k++) {
