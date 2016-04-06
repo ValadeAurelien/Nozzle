@@ -23,7 +23,7 @@ Nozzle_Profiler::Nozzle_Profiler(Usr_Interface *UI, Data_Mapper *DM, arglist_str
         this->UI = UI;
         this->DM = DM;
         this->arglist_pt = arglist_pt;
-        this->DES = new Diff_Eq_Solver (UI, arglist_pt, &(this->mesh_grid_1), &(this->mesh_grid_2));
+        this->DES = new Diff_Eq_Solver (UI, this->DM, arglist_pt, &(this->mesh_grid_1), &(this->mesh_grid_2));
         this->create_mesh_grids();
 }
 
