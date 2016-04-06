@@ -676,16 +676,16 @@ void Diff_Eq_Solver::solve_PG_cart()
            
    data_t thrust = 0.;
    for (int k = 0; k<this->arglist_pt->x_size; k++) {
-   	thrust+= -this->mesh_grid_1[k][0].speed[1]*pow(this->arglist_pt->space_step,2);
+   	thrust+= -mesh_grid_1[k][0].speed[1]*pow(this->arglist_pt->space_step,2);
    }
    this->thrust[i] = thrust;
+   this->DM->thrust_plotter(&(this->thrust));
 }
 
 void Diff_Eq_Solver::solve_VDW_cart()
 {
         register int i;
         for (i=0; i<this->arglist_pt->iter_number_solver; i++) { this->calc_iteration_VDW_cart(); }
-        this->DM->thrust_plotter(&(this->thrust));
 }
 
 void Diff_Eq_Solver::solve_PG_cyl()
