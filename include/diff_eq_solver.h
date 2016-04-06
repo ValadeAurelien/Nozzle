@@ -15,6 +15,7 @@ using namespace std;
 
 // ========= obj dependencies ========
 class Usr_Interface;
+class Data_Mapper;
 struct arglist_struct;
 struct mesh_struct;
 typedef vector<vector<mesh_struct>> mesh_grid_t;
