@@ -109,9 +109,11 @@ class Diff_Eq_Solver
         
         private:
                 Usr_Interface *UI; //pointeur vers l'object d'interface utilisateur
+                Data_Mapper *DM;
                 arglist_struct *arglist_pt; //pointeur vers la arglist
                 mesh_grid_t *mesh_grid_pt1; //pointeur vers le tableau tuyère
                 mesh_grid_t *mesh_grid_pt2;
+                vector<data_t> thrust;
 };
 
 
