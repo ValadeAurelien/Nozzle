@@ -11,17 +11,20 @@
 #include "../include/arg_interpreter.h"
 #include "../include/nozzle_profiler.h"
 #include <cmath>
+#include <vector>
+
 #define R 8.314
-#include <fstream>
-#include <iostream>
 
 // ======== implementation ========
 
-Diff_Eq_Solver::Diff_Eq_Solver(Usr_Interface *UI, arglist_struct *arglist_pt, mesh_grid_t *mesh_grid_pt1, mesh_grid_t *mesh_grid_pt2) {
+Diff_Eq_Solver::Diff_Eq_Solver(Usr_Interface *UI,Data_Mapper *DM, arglist_struct *arglist_pt, mesh_grid_t *mesh_grid_pt1, mesh_grid_t *mesh_grid_pt2) {
         this->UI = UI;
+        this->DM = DM;
         this->arglist_pt = arglist_pt;
         this->mesh_grid_pt1 = mesh_grid_pt1;
         this->mesh_grid_pt2 = mesh_grid_pt2;
+        vector<data_t> thrust(this->arglist_pt->iter_number_solver);
+        this->thrust = thrust;
 }
 
 data_t Diff_Eq_Solver::speed2(int i, int j, int k) {
@@ -669,12 +672,20 @@ void Diff_Eq_Solver::solve_PG_cart()
         for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
         	this->calc_iteration_PG_cart();
         }
+        
+           
+   data_t thrust = 0.;
+   for (int k = 0; k<this->arglist_pt->x_size; k++) {
+   	thrust+= -this->mesh_grid_1[k][0].speed[1]*pow(this->arglist_pt->space_step,2);
+   }
+   this->thrust[i] = thrust;
 }
 
 void Diff_Eq_Solver::solve_VDW_cart()
 {
         register int i;
         for (i=0; i<this->arglist_pt->iter_number_solver; i++) { this->calc_iteration_VDW_cart(); }
+        this->DM->thrust_plotter(&(this->thrust));
 }
 
 void Diff_Eq_Solver::solve_PG_cyl()
