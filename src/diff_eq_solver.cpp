@@ -674,7 +674,8 @@ void Diff_Eq_Solver::solve_PG_cart()
         	this->calc_iteration_PG_cart();
         }
         
-           
+   mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+   
    data_t thrust = 0.;
    for (int k = 0; k<this->arglist_pt->x_size; k++) {
    	thrust+= -mesh_grid_1[k][0].speed[1]*pow(this->arglist_pt->space_step,2);
