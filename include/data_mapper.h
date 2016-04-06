@@ -33,6 +33,7 @@ class Data_Mapper
                 Data_Mapper(Usr_Interface *UI, arglist_struct *arglist_pt);
                 void create_datafile_from_mesh_grid(mesh_grid_t *mesh_grid_pt);
                 void show_datafile();
+                void thrust_plotter(*vector<data_t> thrust_pt);
         private:
                 const string PATH = "./datafiles/";
                 Usr_Interface *UI;
