@@ -669,6 +669,7 @@ void Diff_Eq_Solver::calc_iteration_VDW_cyl() {
 
 void Diff_Eq_Solver::solve_PG_cart()
 {
+   	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
 	data_t thrusty = 0.;
         register int i;
         for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
@@ -681,10 +682,6 @@ void Diff_Eq_Solver::solve_PG_cart()
    		this->thrust[i] = thrusty;
    		this->DM->thrust_plotter(&(this->thrust));
         }
-        
-   mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
-   
-   
 }
 
 void Diff_Eq_Solver::solve_VDW_cart()
