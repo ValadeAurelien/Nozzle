@@ -7,13 +7,14 @@
 */
 
 // ======== include guards ========
-#include <vector>
+
 #ifndef __DIFF_EQ_SOLVER_IS_INCLUDED__
 #define __DIFF_EQ_SOLVER_IS_INCLUDED__
 
 using namespace std;
 
 // ========= obj dependencies ========
+
 class Usr_Interface;
 class Data_Mapper;
 struct arglist_struct;
@@ -22,6 +23,7 @@ typedef vector<vector<mesh_struct>> mesh_grid_t;
 typedef double data_t; 
 // ======= includes ========
 
+#include <vector>
 
 // ======== interface ========
 
