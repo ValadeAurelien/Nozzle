@@ -65,8 +65,8 @@ void Data_Mapper::create_datafile_from_mesh_grid(mesh_grid_t *mesh_grid_pt)
 void Data_Mapper::thrust_plotter(vector<data_t> *thrust_pt) {
         ofstream file;
         file.open("./thrust.data", ios::out);
-        for (int k=0; k<thrust->size();k++) {
-                file << k*this->arglist_pt->time_step << setw(WIDTH) << thrust[k] << endl;
+        for (int k=0; k<thrust_pt->size();k++) {
+                file << setw(WIDTH) << k*this->arglist_pt->time_step << setw(WIDTH) << setprecision(PRECISION) << *(thrust_pt)[k] << endl;
         }
         file.close();
 }
