@@ -32,7 +32,7 @@ using namespace std;
 
 enum gaz_type_en {PG=0, VDW=1}; //liste des gazs possibles, on assigne un entier en plus pour pouvoir des switch si on ajoute d'autres types de gaz
 enum nozzle_fitting_algo_en {LAGRANGE=0, BRUTAL_FORCE=1, SEGMENT=2}; // liste des choix de fiitting possible pour la tuyère. Utilisé dans nozzle_profiler.h
-enum diff_eq_solver_algo_en {PG_cart=0, VDW_cart=1, PG_cyl=2, VDW_cyl=3};
+enum diff_eq_solver_algo_en {PG_cart=0, VDW_cart=1, PG_cyl=2, VDW_cyl=3, PG_cart_turb=4};
 
 
 // structures et unions
