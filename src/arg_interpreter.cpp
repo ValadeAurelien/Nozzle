@@ -119,7 +119,7 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
         }
         //else throw "AI: Not codded yet!!!!!";
         
-        (this->UI)->cout_str("Choose the differential equation solver algorithm (PG_cart=0,VDW_cart=1,PG_cyl=2,VDW_cyl=3)");
+        (this->UI)->cout_str("Choose the differential equation solver algorithm (PG_cart=0,VDW_cart=1,PG_cyl=2,VDW_cyl=3,PG_cart_turb=4)");
         answer = (this->UI)->cin_str();
         file << "differential_equation_solver_algo = " << answer << endl;
         
