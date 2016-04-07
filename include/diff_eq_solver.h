@@ -67,6 +67,9 @@ class Diff_Eq_Solver
                 void update_pres_PG(int i, int j); //mise à jour de la pression gaz parfait
                 void update_pres_VDW(int i, int j);//mise à jour de la pression Van der Waals
                 
+                void update_k_PG_turb(int i, int j);
+                void update_epsilon_PG_turb(int i, int j);
+                
                 //quelques fonctions pour clarifier le bazar
                 data_t speed2(int i, int j, int k);//la norme au carré de la vitesse
                 data_t r(int i);//définit la coordonnée radiale r en fonction de i l'ordonnée dans le tableau
