@@ -772,6 +772,44 @@ void Diff_Eq_Solver::calc_iteration_PG_cart() {
    this->mesh_grid_pt1 = temp_point; //échange des deux pointeurs
 }
 
+void Diff_Eq_Solver::calc_iteration_PG_cart_turb() {
+	mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
+        mesh_grid_t &mesh_grid_2 = (*(this->mesh_grid_pt2));
+        
+  register int i,j;
+  for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
+    for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
+      
+        this->update_vol_mass(i,j);
+        
+	this->update_speed_x_turb(i,j);
+        
+        this->update_speed_y_turb(i,j);
+        
+        this->update_temp_PG_turb(i,j);
+        
+        this->update_pres_PG(i,j);
+        
+        this->update_k_PG_turb(i,j);
+        
+        this->update_epsilon_PG_turb(i,j);
+        
+      }
+   }
+   for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
+           copy_case(i,0,i,1);
+   }
+   for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
+           copy_case(0,j,1,j);
+           copy_case(this->arglist_pt->x_size-1,j,this->arglist_pt->x_size-2,j);
+   }
+   
+   mesh_grid_t *temp_point = this->mesh_grid_pt2;
+   this->mesh_grid_pt2= this->mesh_grid_pt1;
+   this->mesh_grid_pt1 = temp_point; //échange des deux pointeurs
+	
+}
+
 void Diff_Eq_Solver::calc_iteration_PG_cyl() {
         mesh_grid_t &mesh_grid_1 = (*(this->mesh_grid_pt1));
         mesh_grid_t &mesh_grid_2 = (*(this->mesh_grid_pt2));
