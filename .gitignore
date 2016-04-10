@@ -1,3 +1,5 @@
-./lib
-./bin
-./share
+#ignore libs, bin and share add by gsl
+
+\lib
+\bin
+\share
