@@ -7,10 +7,10 @@
 
 
 // ======== includes ======== 
-#include "../include/data_mapper.h"
-#include "../include/arg_interpreter.h"
-#include "../include/usr_interface.h"
-#include "../include/nozzle_profiler.h"
+#include "data_mapper.h"
+#include "arg_interpreter.h"
+#include "usr_interface.h"
+#include "nozzle_profiler.h"
 
 #include <iostream>
 #include <fstream>

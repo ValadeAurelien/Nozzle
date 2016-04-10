@@ -6,7 +6,7 @@
 
 // ======== includes ========
 
-#include "../include/usr_interface.h"
+#include "usr_interface.h"
 
 #include <iostream>
 #include <iomanip>

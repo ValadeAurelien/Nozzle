@@ -7,8 +7,8 @@
 
 
 // ======== includes ======== 
-#include "../include/arg_interpreter.h"
-#include "../include/usr_interface.h"
+#include "arg_interpreter.h"
+#include "usr_interface.h"
 
 #include <fstream>
 #include <iostream>

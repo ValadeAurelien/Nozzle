@@ -7,10 +7,11 @@
 
 
 // ======== includes ======== 
-#include "../include/nozzle_profiler.h"
-#include "../include/arg_interpreter.h"
-#include "../include/usr_interface.h"
-#include "../include/data_mapper.h"
+#include "nozzle_profiler.h"
+#include "arg_interpreter.h"
+#include "usr_interface.h"
+#include "data_mapper.h"
+#include <gsl/gsl_multimin.h>
 #include <cmath>
 
 // ======== implementation ========

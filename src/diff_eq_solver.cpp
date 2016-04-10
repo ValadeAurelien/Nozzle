@@ -7,10 +7,10 @@
 
 
 // ======== includes ======== 
-#include "../include/diff_eq_solver.h"
-#include "../include/arg_interpreter.h"
-#include "../include/nozzle_profiler.h"
-#include "../include/data_mapper.h"
+#include "diff_eq_solver.h"
+#include "arg_interpreter.h"
+#include "nozzle_profiler.h"
+#include "data_mapper.h"
 #include <cmath>
 #include <vector>
 
