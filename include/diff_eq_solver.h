@@ -39,32 +39,66 @@ class Diff_Eq_Solver
                 void solve_VDW_cart();
                 void solve_PG_cyl();
                 void solve_VDW_cyl();
+                void solve_PG_cart_turb();
 
                 void calc_iteration_PG_cart(); //méthode principale gaz parfait
                 void calc_iteration_VDW_cart(); //méthode principale Van der Waals
                 void calc_iteration_PG_cyl(); //méthode principale gaz parfait, yoloswag en cylindriques
                 void calc_iteration_VDW_cyl();//méthode principale Van der Waals en cylindriques
-                void copy_case(int i, int j, int k, int l); //copie de la struct mesh_grid pour les ocnditions au bord
-                
+                void calc_iteration_PG_cart_turb(); //méthode principales en turbulence
+                void copy_case(int i, int j, int k, int l); //copie de la struct mesh_grid pour les conditions au bord
+                void exchange_mesh_grid_pts(); //echange des pointeurs des deux meshgrid
+
                 void update_vol_mass(int i,int j); //mise à jour de la masse volumique
+                void update_vol_mass_cyl(int i, int j);//mise à jour de la masse volumique en coordonnées cylindriques
+                
                 void update_speed_x(int i, int j); //mise à jour de la vitesse selon x
                 void update_speed_y(int i, int j); //mise à jour de la vitesse selon y
-                
-                void update_vol_mass_cyl(int i, int j);//mise à jour de la masse volumique en coordonnées cylindriques
+                void update_speed_x_turb(int i, int j);
+                void update_speed_y_turb(int i, int j);
                 void update_speed_r_cyl(int i, int j); //mise à jour la vitesse_r en cylindriques
                 void update_speed_z_cyl(int i, int j); //mise à jour la vitesse_z en cylindriques
                 
                 void update_temp_PG(int i, int j); //mise à jour de la température gaz parfait
                 void update_temp_PG_cyl(int i, int j);//mise à jour de la température GP en cyl
-                void update_pres_PG(int i, int j); //mise à jour de la pression gaz parfait
-                
+                void update_temp_PG_turb(int i, int j);
                 void update_temp_VDW(int i, int j);//mise à jour de la température Van der Waals
                 void update_temp_VDW_cyl(int i, int j);//mise à jour de la température VDW en cyl
+                
+                void update_pres_PG(int i, int j); //mise à jour de la pression gaz parfait
                 void update_pres_VDW(int i, int j);//mise à jour de la pression Van der Waals
+                
+                void update_k_PG_turb(int i, int j);
+                void update_epsilon_PG_turb(int i, int j);
                 
                 //quelques fonctions pour clarifier le bazar
                 data_t speed2(int i, int j, int k);//la norme au carré de la vitesse
                 data_t r(int i);//définit la coordonnée radiale r en fonction de i l'ordonnée dans le tableau
+                data_t pres_tot_PG(int i, int j);//en fait c'est rho*e+P
+                data_t en_tot_PG(int i, int j);//en fait c'est e l'énergie massique
+                data_t pres_tot_VDW(int i, int j);//en fait c'est encore rho*e+P
+                data_t en_tot_VDW(int i, int j);//en fait c'est l'énergie massique
+                data_t vtaux(int i, int j);
+                data_t vtaux_turb(int i, int j);
+                data_t vtauy(int i, int j);
+                data_t vtauy_turb(int i, int j);
+                data_t tot_stress_xx(int i, int j);
+                data_t tot_stress_yy(int i, int j);
+                data_t tot_stress_xy(int i, int j);
+                data_t turb_stress_xx(int i, int j);
+                data_t turb_stress_yy(int i, int j);
+                data_t turb_stress_xy(int i, int j);
+                data_t mol_stress_xy(int i, int j);
+                data_t mol_stress_xx(int i, int j);
+                data_t mol_stress_yy(int i, int j);
+                data_t strain_xy(int i, int j);
+                data_t strain_xx(int i, int j);
+                data_t strain_yy(int i, int j);
+                data_t heat_flux_x_turb(int i, int j);
+                data_t heat_flux_y_turb(int i, int j);
+                data_t mu_t(int i, int j);
+                data_t lambda_t(int i, int j);
+
                 data_t diver_rhov_c(int i, int j);//la divergence en cartésiennes
                 data_t deriv_x_pres(int i, int j);//première composante du gradient de pression en cartésiennes
                 data_t deriv_y_pres(int i, int j);//deuxième composante du gradient de pression en cartésiennes
@@ -79,10 +113,6 @@ class Diff_Eq_Solver
                 data_t deriv_x_temp(int i, int j);
                 data_t deriv_y_temp(int i, int j);
                 data_t deriv_r_temp(int i, int j);//dérivée radiale de la température
-                data_t pres_tot_PG(int i, int j);//en fait c'est rho*e+P
-                data_t en_tot_PG(int i, int j);//en fait c'est e l'énergie massique
-                data_t pres_tot_VDW(int i, int j);//en fait c'est encore rho*e+P
-                data_t en_tot_VDW(int i, int j);//en fait c'est l'énergie massique
                 data_t deriv_x_prestotPGvx(int i, int j);//tout est dans le nom
                 data_t deriv_y_prestotPGvy(int i, int j);//tout est dans le nom
                 data_t deriv_r_prestotPGrvr(int i, int j);//tout est dans le nom
@@ -94,21 +124,24 @@ class Diff_Eq_Solver
                 data_t deriv_y_vx(int i, int j);
                 data_t deriv_x_vy(int i, int j);
                 data_t deriv_y_vy(int i, int j);
-                data_t mol_stress_xy(int i, int j);
-                data_t mol_stress_xx(int i, int j);
-                data_t mol_stress_yy(int i, int j);
-                data_t strain_xy(int i, int j);
-                data_t strain_xx(int i, int j);
-                data_t strain_yy(int i, int j);
                 data_t deriv_x_tauxx(int i, int j);
+                data_t deriv_x_tauxx_turb(int i, int j);
                 data_t deriv_x_tauyx(int i, int j);
+                data_t deriv_x_tauyx_turb(int i, int j);
                 data_t deriv_y_tauyy(int i, int j);
+                data_t deriv_y_tauyy_turb(int i, int j);
                 data_t deriv_y_tauxy(int i, int j);
+                data_t deriv_y_tauxy_turb(int i, int j);
                 data_t diver_vtau(int i, int j);
-                data_t vtaux(int i, int j);
-                data_t vtauy(int i, int j);
+                data_t diver_vtau_turb(int i, int j);
                 data_t deriv_x_vtaux(int i, int j);
+                data_t deriv_x_vtaux_turb(int i, int j);
                 data_t deriv_y_vtauy(int i, int j);
+                data_t deriv_y_vtauy_turb(int i, int j);
+                data_t deriv_x_heat_flux_x_turb(int i, int j);
+                data_t deriv_y_heat_flux_y_turb(int i, int j);
+                data_t diver_heat_flux_turb(int i, int j);
+
                 bool is_in(int i, int j);
         
         private:

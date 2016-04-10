@@ -35,6 +35,8 @@ struct mesh_struct{
         data_t temperature;
         data_t vol_mass;
         data_t speed[2];
+        data_t turb_en;
+        data_t turb_dis;
 };
 
 // template <typename data_t>;  // pas sur que cette ligne soit utile

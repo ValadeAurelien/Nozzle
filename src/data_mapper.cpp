@@ -42,6 +42,7 @@ void Data_Mapper::create_datafile_from_mesh_grid(mesh_grid_t *mesh_grid_pt)
                 << setw(WIDTH) << "is_wall" << setw(WIDTH) << "pressure"
                 << setw(WIDTH) << "temper" << setw(WIDTH) << "vol_mass"
                 << setw(WIDTH) << "speed_1" << setw(WIDTH) <<  "speed_2"
+                << setw(WIDTH) << "turb_en" << setw(WIDTH) << "turb_dis"
                 << endl << endl;
 
         register int i,j;
@@ -55,6 +56,8 @@ void Data_Mapper::create_datafile_from_mesh_grid(mesh_grid_t *mesh_grid_pt)
                                 << setw(WIDTH) << setprecision(PRECISION) << mesh_grid[i][j].vol_mass
                                 << setw(WIDTH) << setprecision(PRECISION) << mesh_grid[i][j].speed[0]
                                 << setw(WIDTH) << setprecision(PRECISION) << mesh_grid[i][j].speed[1]
+                                << setw(WIDTH) << setprecision(PRECISION) << mesh_grid[i][j].turb_en
+                                << setw(WIDTH) << setprecision(PRECISION) << mesh_grid[i][j].turb_dis
                                 << endl;
                 }
                 file << endl;
