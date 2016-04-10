@@ -47,7 +47,8 @@ class Diff_Eq_Solver
                 void calc_iteration_VDW_cyl();//méthode principale Van der Waals en cylindriques
                 void calc_iteration_PG_cart_turb(); //méthode principales en turbulence
                 void copy_case(int i, int j, int k, int l); //copie de la struct mesh_grid pour les conditions au bord
-                
+                void exchange_mesh_grid_pts(); //echange des pointeurs des deux meshgrid
+
                 void update_vol_mass(int i,int j); //mise à jour de la masse volumique
                 void update_vol_mass_cyl(int i, int j);//mise à jour de la masse volumique en coordonnées cylindriques
                 
