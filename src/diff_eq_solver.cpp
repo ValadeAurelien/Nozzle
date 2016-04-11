@@ -669,120 +669,71 @@ bool Diff_Eq_Solver::is_in(int i, int j) {
 }
 
 void Diff_Eq_Solver::update_vol_mass(int i, int j) { //mise à jour de la masse volumique
-        
-        if (not (mesh_grid_1[i][j].is_wall)) {
-                mesh_grid_2[i][j].vol_mass = mesh_grid_1[i][j].vol_mass - diver_rhov_c(i,j)*this->arglist_pt->time_step;
-        }
+        mesh_grid_2[i][j].vol_mass = mesh_grid_1[i][j].vol_mass - diver_rhov_c(i,j)*this->arglist_pt->time_step;
 }
 
 void Diff_Eq_Solver::update_vol_mass_cyl(int i, int j) {
-        
-        if (not (mesh_grid_1[i][j].is_wall)){
-                mesh_grid_2[i][j].vol_mass = mesh_grid_1[i][j].vol_mass-this->arglist_pt->time_step*(1.0/r(i)*deriv_r_rrhovr(i,j)+deriv_y_rhovy(i,j));
-        }
+        mesh_grid_2[i][j].vol_mass = mesh_grid_1[i][j].vol_mass-this->arglist_pt->time_step*(1.0/r(i)*deriv_r_rrhovr(i,j)+deriv_y_rhovy(i,j));
 }
 
 void Diff_Eq_Solver::update_speed_x(int i, int j) {
-	
-	if (not(mesh_grid_1[i][j].is_wall)) {
-	mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[0]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vx(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vx(i,j)+deriv_x_pres(i,j)-deriv_y_tauxy(i,j)-deriv_x_tauxx(i,j) ) );
-	}
+	mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[0]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vx(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vx(i,j)+deriv_x_pres(i,j)-deriv_y_tauxy(i,j)-deriv_x_tauxx(i,j)));
 }
 
 void Diff_Eq_Solver::update_speed_y(int i, int j) {
-
-	if (not(mesh_grid_1[i][j].is_wall)) {
-	mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[1]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vy(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vy(i,j)+deriv_y_pres(i,j)-deriv_x_tauyx(i,j)-deriv_y_tauyy(i,j)  )  );
-	}
+	mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[1]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vy(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vy(i,j)+deriv_y_pres(i,j)-deriv_x_tauyx(i,j)-deriv_y_tauyy(i,j)));
 }
 
 void Diff_Eq_Solver::update_speed_r_cyl(int i, int j) {
-        
-        if (not (mesh_grid_1[i][j].is_wall) ){
-                mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-this->arglist_pt->time_step*(-deriv_x_pres(i,j)-mesh_grid_1[i][j].speed[0]*deriv_x_rhovx(i,j)+mesh_grid_1[i][j].speed[1]*deriv_y_rhovy(i,j)));
-        }
+	mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-this->arglist_pt->time_step*(-deriv_x_pres(i,j)-mesh_grid_1[i][j].speed[0]*deriv_x_rhovx(i,j)+mesh_grid_1[i][j].speed[1]*deriv_y_rhovy(i,j)));
 }
 
 void Diff_Eq_Solver::update_speed_z_cyl(int i, int j) {
-        
-        if (not (mesh_grid_1[i][j].is_wall)) {
-                mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-this->arglist_pt->time_step*(deriv_y_pres(i,j) - mesh_grid_1[i][j].speed[0]*deriv_x_rhovx(i,j)+mesh_grid_1[i][j].speed[1]*deriv_y_rhovy(i,j) )  );
-        }
+        mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-this->arglist_pt->time_step*(deriv_y_pres(i,j) - mesh_grid_1[i][j].speed[0]*deriv_x_rhovx(i,j)+mesh_grid_1[i][j].speed[1]*deriv_y_rhovy(i,j)));
 }
 
 void Diff_Eq_Solver::update_speed_x_turb(int i, int j) {
-
-	if (not(mesh_grid_1[i][j].is_wall)) {
-	mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[0]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vx(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vx(i,j)+deriv_x_pres(i,j)-deriv_y_tauxy_turb(i,j)-deriv_x_tauxx_turb(i,j) ) );
-	}
+	mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[0]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vx(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vx(i,j)+deriv_x_pres(i,j)-deriv_y_tauxy_turb(i,j)-deriv_x_tauxx_turb(i,j));
 }
 
 void Diff_Eq_Solver::update_speed_y_turb(int i, int j) {
-
-	if (not(mesh_grid_1[i][j].is_wall)) {
-	mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[1]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vy(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vy(i,j)+deriv_y_pres(i,j)-deriv_x_tauyx_turb(i,j)-deriv_y_tauyy_turb(i,j)  )  );
-	}
+	mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[1]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vy(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vy(i,j)+deriv_y_pres(i,j)-deriv_x_tauyx_turb(i,j)-deriv_y_tauyy_turb(i,j)));
 }
 
 void Diff_Eq_Solver::update_pres_VDW(int i, int j) { //mise à jour de la pression Van der Waals
-
-        if (not (mesh_grid_1[i][j].is_wall)) {
         mesh_grid_2[i][j].pressure = mesh_grid_2[i][j].vol_mass * R * mesh_grid_2[i][j].temperature / (this->arglist_pt->mol_mass - this->arglist_pt->VDW_b_coef * mesh_grid_2[i][j].vol_mass) - this->arglist_pt->VDW_a_coef * pow(mesh_grid_2[i][j].vol_mass / this->arglist_pt->mol_mass,2);
-        }
 }
 
 void Diff_Eq_Solver::update_temp_VDW(int i, int j) { //mise à jour de la température Van der Waals
-
-        if (not (mesh_grid_1[i][j].is_wall)) {
-                mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(this->arglist_pt->VDW_a_coef*mesh_grid_2[i][j].vol_mass/pow(this->arglist_pt->mol_mass,2)-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_VDW(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(deriv2_x_temp(i,j)+deriv2_y_temp(i,j))-deriv_x_prestotVDWvx(i,j)-deriv_y_prestotVDWvy(i,j))));
-        }
+        mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(this->arglist_pt->VDW_a_coef*mesh_grid_2[i][j].vol_mass/pow(this->arglist_pt->mol_mass,2)-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_VDW(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(deriv2_x_temp(i,j)+deriv2_y_temp(i,j))-deriv_x_prestotVDWvx(i,j)-deriv_y_prestotVDWvy(i,j))));
 }
 
 void Diff_Eq_Solver::update_temp_VDW_cyl(int i, int j) {
-        
-        if (not (mesh_grid_1[i][j].is_wall) ){
-                mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(this->arglist_pt->VDW_a_coef*mesh_grid_2[i][j].vol_mass/pow(this->arglist_pt->mol_mass,2)-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_VDW(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(-deriv2_x_temp(i,j)+1.0/r(i)*deriv_r_temp(i,j)+deriv2_y_temp(i,j))-1.0/r(i)*deriv_r_prestotVDWrvr(i,j)-deriv_y_prestotVDWvy(i,j))));   
-        }
+        mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(this->arglist_pt->VDW_a_coef*mesh_grid_2[i][j].vol_mass/pow(this->arglist_pt->mol_mass,2)-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_VDW(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(-deriv2_x_temp(i,j)+1.0/r(i)*deriv_r_temp(i,j)+deriv2_y_temp(i,j))-1.0/r(i)*deriv_r_prestotVDWrvr(i,j)-deriv_y_prestotVDWvy(i,j))));   
 }
 
 void Diff_Eq_Solver::update_temp_PG(int i, int j) { //mise à jour de la température gaz parfait
-
-        if (not (mesh_grid_1[i][j].is_wall) ){
-                mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(deriv2_x_temp(i,j)+deriv2_y_temp(i,j))-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j)+diver_vtau(i,j))));
-        }
+	mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(deriv2_x_temp(i,j)+deriv2_y_temp(i,j))-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j)+diver_vtau(i,j))));
 }
 
 void Diff_Eq_Solver::update_temp_PG_cyl(int i, int j) {
-        
-        if (not (mesh_grid_1[i][j].is_wall)) {
-                mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(-deriv2_x_temp(i,j)+1.0/r(i)*deriv_r_temp(i,j)+deriv2_y_temp(i,j))-1.0/r(i)*deriv_r_prestotPGrvr(i,j)-deriv_y_prestotPGvy(i,j))));
-        }
+	mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(-deriv2_x_temp(i,j)+1.0/r(i)*deriv_r_temp(i,j)+deriv2_y_temp(i,j))-1.0/r(i)*deriv_r_prestotPGrvr(i,j)-deriv_y_prestotPGvy(i,j))));
 }
 
 void Diff_Eq_Solver::update_temp_PG_turb(int i, int j) { //mise à jour de la température gaz parfait
-
-        if (not (mesh_grid_1[i][j].is_wall) ){
-                mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+this->arglist_pt->time_step*(diver_heat_flux_turb(i,j)-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j)+diver_vtau_turb(i,j))));
-        }
+        mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+this->arglist_pt->time_step*(diver_heat_flux_turb(i,j)-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j)+diver_vtau_turb(i,j))));
 }
 
 void Diff_Eq_Solver::update_pres_PG(int i, int j) { //mise à jour de la pression gaz parfait
-        
-        if (not (mesh_grid_1[i][j].is_wall)) {
-                mesh_grid_2[i][j].pressure = mesh_grid_2[i][j].vol_mass * R * mesh_grid_2[i][j].temperature / this->arglist_pt->mol_mass;
-        }
+        mesh_grid_2[i][j].pressure = mesh_grid_2[i][j].vol_mass * R * mesh_grid_2[i][j].temperature / this->arglist_pt->mol_mass;
 }
 
 void Diff_Eq_Solver::update_k_PG_turb(int i, int j) {
-	if (not(mesh_grid_1[i][j].is_wall)) {
-		mesh_grid_2[i][j].turb_en = 1./mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].turb_en*mesh_grid_1[i][j].vol_mass+this->arglist_pt->time_step*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*turb_stress_xy(i,j)*strain_xy(i,j)-mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_dis-diver_rhovk(i,j)+diver_mudk(i,j)));
-	}
+	mesh_grid_2[i][j].turb_en = 1./mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].turb_en*mesh_grid_1[i][j].vol_mass+this->arglist_pt->time_step*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*turb_stress_xy(i,j)*strain_xy(i,j)-mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_dis-diver_rhovk(i,j)+diver_mudk(i,j)));
 }
 
 void Diff_Eq_Solver::update_epsilon_PG_turb(int i, int j) {
-	if (not(mesh_grid_1[i][j].is_wall)) {
-		mesh_grid_2[i][j].turb_dis = 1./mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_dis+this->arglist_pt->time_step*(c_e_1*mesh_grid_1[i][j].turb_dis/mesh_grid_1[i][j].turb_en*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*turb_stress_xy(i,j)*strain_xy(i,j)) - c_e_2*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_dis,2)/mesh_grid_1[i][j].turb_en - diver_rhovepsilon(i,j) + diver_mudepsilon(i,j)));
-	}
+	mesh_grid_2[i][j].turb_dis = 1./mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_dis+this->arglist_pt->time_step*(c_e_1*mesh_grid_1[i][j].turb_dis/mesh_grid_1[i][j].turb_en*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*turb_stress_xy(i,j)*strain_xy(i,j)) - c_e_2*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_dis,2)/mesh_grid_1[i][j].turb_en - diver_rhovepsilon(i,j) + diver_mudepsilon(i,j)));
 }
 
 void Diff_Eq_Solver::copy_case(int i, int j, int k, int l) {
@@ -812,17 +763,18 @@ void Diff_Eq_Solver::calc_iteration_PG_cart() {
   register int i,j;
   for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
     for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
+	if (not(mesh_grid_1[i][j].is_wall)) {
       
         this->update_vol_mass(i,j);
         
-       this->update_speed_x(i,j);
+        this->update_speed_x(i,j);
         
         this->update_speed_y(i,j);
         
         this->update_temp_PG(i,j);
         
         this->update_pres_PG(i,j);
-        
+	}
       }
    }
    for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
@@ -841,7 +793,7 @@ void Diff_Eq_Solver::calc_iteration_PG_cart_turb() {
   register int i,j;
   for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
     for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
-      
+        if (not(mesh_grid_1[i][j].is_wall)) {
         this->update_vol_mass(i,j);
         
 	this->update_speed_x_turb(i,j);
@@ -855,7 +807,7 @@ void Diff_Eq_Solver::calc_iteration_PG_cart_turb() {
         this->update_k_PG_turb(i,j);
         
         this->update_epsilon_PG_turb(i,j);
-        
+        }
       }
    }
    for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
@@ -875,7 +827,8 @@ void Diff_Eq_Solver::calc_iteration_PG_cyl() {
         register int i,j;
         for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
                 for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
-      
+      			if (not(mesh_grid_1[i][j].is_wall)) {
+      			
                         this->update_vol_mass_cyl(i,j);
         
                         this->update_speed_r_cyl(i,j);
@@ -885,7 +838,8 @@ void Diff_Eq_Solver::calc_iteration_PG_cyl() {
                         this->update_temp_PG_cyl(i,j);
         
                         this->update_pres_PG(i,j);
-        
+                        
+      			}
                 }
         }
         for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
@@ -903,7 +857,7 @@ void Diff_Eq_Solver::calc_iteration_VDW_cart() {
         register int i,j;
         for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
                 for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
-      
+      			if (not(mesh_grid_1[i][j].is_wall)) {
                         this->update_vol_mass(i,j);
         
                         this->update_speed_x(i,j);
@@ -913,7 +867,7 @@ void Diff_Eq_Solver::calc_iteration_VDW_cart() {
                         this->update_temp_VDW(i,j);
         
                         this->update_pres_VDW(i,j);
-        
+      			}
                 }
         }
         for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
@@ -932,9 +886,9 @@ void Diff_Eq_Solver::calc_iteration_VDW_cyl() {
         register int i,j;
         for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
                 for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
-      
+      			if (not(mesh_grid_1[i][j].is_wall)) {
+      			
                         this->update_vol_mass_cyl(i,j);
-      
 
                         this->update_speed_r_cyl(i,j);
         
@@ -943,7 +897,7 @@ void Diff_Eq_Solver::calc_iteration_VDW_cyl() {
                         this->update_temp_VDW_cyl(i,j);
         
                         this->update_pres_VDW(i,j);
-        
+      			}
                 }
         }
         for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
