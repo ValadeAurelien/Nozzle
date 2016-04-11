@@ -537,6 +537,126 @@ data_t Diff_Eq_Solver::turb_stress_xy(int i, int j) {
 	return(2.0*mu_t(i,j)*strain_xy(i,j));
 }
 
+data_t Diff_Eq_Solver::diver_rhovk(int i, int j) {
+	return(deriv_x_rhovxk(i,j)+deriv_y_rhovyk(i,j));
+}
+
+data_t Diff_Eq_Solver::deriv_x_rhovxk(int i, int j) {
+	return(
+	(mesh_grid_1[i+1][j].turb_en*mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0]-mesh_grid_1[i-1][j].turb_en*mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0])
+	/(2*this->arglist_pt->space_step)
+	);
+}
+
+data_t Diff_Eq_Solver::deriv_y_rhovyk(int i, int j) {
+	return(
+	(mesh_grid_1[i][j+1].turb_en*mesh_grid_1[i][j+1].vol_mass*mesh_grid_1[i][j+1].speed[1]-mesh_grid_1[i][j-1].turb_en*mesh_grid_1[i][j-1].vol_mass*mesh_grid_1[i][j-1].speed[1])
+	/(2*this->arglist_pt->space_step)
+	);
+}
+
+data_t Diff_Eq_Solver::diver_mudk(int i, int k) {
+	return(deriv_x_mudxk(i,j)+deriv_y_mudyk(i,j));
+}
+
+data_t Diff_Eq_Solver::deriv_x_mudxk(int i, int j) {
+	return(
+	( (mesh_grid_1[i+1][j].mu_t/sig_k+this->arglist_pt->dyn_visc)*deriv_x_k(i+1,j) - (mesh_grid_1[i-1][j].mu_t/sig_k+this->arglist_pt->dyn_visc)*deriv_x_k(i-1,j))
+	/ (2*this->arglist_pt->space_step)
+	);
+}
+
+data_t Diff_Eq_Solver::deriv_y_mudyk(int i, int j) {
+	return(
+	( (mesh_grid_1[i][j+1].mu_t/sig_k+this->arglist_pt->dyn_visc)*deriv_y_k(i,j+1) - (mesh_grid_1[i][j-1].mu_t/sig_k+this->arglist_pt->dyn_visc)*deriv_y_k(i,j-1))
+	/ (2*this->arglist_pt->space_step)
+	);
+}
+
+data_t Diff_Eq_Solver::deriv_x_k(int i, int j) {
+	if (is_in(i+1,j) && is_in(i-1,j)) {
+		return(
+		(mesh_grid_1[i+1][j].turb_en-mesh_grid_1[i-1][j].turb_en)
+		/ (2*this->arglist_pt->space_step)
+		);
+	}
+	else {
+		return(0.);
+	}
+}
+
+data_t Diff_Eq_Solver::deriv_y_k(int i, int j) {
+	if (is_in(i,j+1) && is_in(i,j-1)) {
+		return(
+		(mesh_grid_1[i][j+1].turb_en-mesh_grid_1[i][j-1].turb_en)
+		/ (2*this->arglist_pt->space_step)
+		);
+	}
+	else {
+		return(0.);
+	}
+}
+
+data_t Diff_Eq_Solver::diver_rhovepsilon(int i, int j) {
+	return(deriv_x_rhovxepsilon(i,j)+deriv_y_rhovyepsilon(i,j));
+}
+
+data_t Diff_Eq_Solver::deriv_x_rhovxepsilon(int i, int j) {
+	return(
+	(mesh_grid_1[i+1][j].turb_dis*mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0]-mesh_grid_1[i-1][j].turb_dis*mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0])
+	/(2*this->arglist_pt->space_step)
+	);
+}
+
+data_t Diff_Eq_Solver::deriv_y_rhovyepsilon(int i, int j) {
+	return(
+	(mesh_grid_1[i][j+1].turb_dis*mesh_grid_1[i][j+1].vol_mass*mesh_grid_1[i][j+1].speed[1]-mesh_grid_1[i][j-1].turb_dis*mesh_grid_1[i][j-1].vol_mass*mesh_grid_1[i][j-1].speed[1])
+	/(2*this->arglist_pt->space_step)
+	);
+}
+
+data_t Diff_Eq_Solver::diver_mudepsilon(int i, int j) {
+	return(deriv_x_mudxepsilon(i,j)+deriv_y_mudyepsilon(i,j));
+}
+
+data_t Diff_Eq_Solver::deriv_x_mudxepsilon(int i, int j) {
+	return(
+	((mesh_grid_1[i+1][j].mu_t/sig_e+this->arglist_pt->dyn_visc)*deriv_x_epsilon(i+1,j) - (mesh_grid_1[i-1][j].mu_t/sig_e+this->arglist_pt->dyn_visc)*deriv_x_epsilon(i-1,j))
+	/ (2*this->arglist_pt->space_step)
+	);
+}
+
+data_t Diff_Eq_Solver::deriv_y_mudyepsilon(int i, int j) {
+	return(
+	( (mesh_grid_1[i][j+1].mu_t/sig_e+this->arglist_pt->dyn_visc)*deriv_y_epsilon(i,j+1) - (mesh_grid_1[i][j-1].mu_t/sig_e+this->arglist_pt->dyn_visc)*deriv_y_epsilon(i,j-1))
+	/ (2*this->arglist_pt->space_step)
+	);
+}
+
+data_t Diff_Eq_Solver::deriv_x_epsilon(int i, int j) {
+	if (is_in(i+1,j) && is_in(i-1,j)) {
+		return(
+		(mesh_grid_1[i+1][j].turb_dis-mesh_grid_1[i-1][j].turb_dis)
+		/ (2*this->arglist_pt->space_step)
+		);
+	}
+	else {
+		return(0.);
+	}
+}
+
+data_t Diff_Eq_Solver::deriv_y_epsilon(int i, int j) {
+	if (is_in(i,j+1) && is_in(i,j-1)) {
+		return(
+		(mesh_grid_1[i][j+1].turb_dis-mesh_grid_1[i][j-1].turb_dis)
+		/ (2*this->arglist_pt->space_step)
+		);
+	}
+	else {
+		return(0.);
+	}
+}
+
 bool Diff_Eq_Solver::is_in(int i, int j) {
 	if (i>=0 && i<this->arglist_pt->x_size && j>=0 && j<this->arglist_pt->y_size) {
 		return(true);
@@ -642,6 +762,18 @@ void Diff_Eq_Solver::update_pres_PG(int i, int j) { //mise à jour de la pressio
         if (not (mesh_grid_1[i][j].is_wall)) {
                 mesh_grid_2[i][j].pressure = mesh_grid_2[i][j].vol_mass * R * mesh_grid_2[i][j].temperature / this->arglist_pt->mol_mass;
         }
+}
+
+void Diff_Eq_Solver::update_k_PG_turb(int i, int j) {
+	if (not(mesh_grid_1[i][j].is_wall)) {
+		mesh_grid_2[i][j].turb_en = 1./mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].turb_en*mesh_grid_1[i][j].vol_mass+this->arglist_pt->time_step*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*tubr_stress_xy(i,j)*strain_xy(i,j)-mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_diss-diver_rhovk(i,j)+diver_mudk(i,j)));
+	}
+}
+
+void Diff_Eq_Solver::update_epsilon_PG_turb(int i, int j) {
+	if (not(mesh_grid_1[i][j].is_wall)) {
+		mesh_grid_2[i][j].turb_dis = 1/.mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_dis+this->arglist_pt->time_step*(c_e_1*mesh_grid_1[i][j].turb_dis/mesh_grid_1[i][j].turb_en*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*tubr_stress_xy(i,j)*strain_xy(i,j)) - c_e_2*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_dis,2)/mesh_grid_1[i][j].turb_en - diver_rhovepsilon(i,j) + diver_mudepsilon(i,j)));
+	}
 }
 
 void Diff_Eq_Solver::copy_case(int i, int j, int k, int l) {
