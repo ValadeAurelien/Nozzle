@@ -145,17 +145,20 @@ void Nozzle_Profiler::set_init_conditions()
                         if (this->mesh_grid_1[i][j].is_wall) {
                                 this->mesh_grid_1[i][j].speed[1]=0 ;
                                 this->mesh_grid_1[i][j].speed[0]=0 ;
+                                this->mesh_grid_1[i][j].turb_en=0;
+                                this->mesh_grid_1[i][j].turb_dis=0;
                         }
-                }
-        }
-        
-        for (i=0; i<this->arglist_pt->x_size; i++){
-                for (j=middle; j<this->arglist_pt->y_size; j++){
-                        this->mesh_grid_2[i][j].pressure = this->mesh_grid_1[i][j].pressure ;
-                        this->mesh_grid_2[i][j].temperature = this->mesh_grid_1[i][j].temperature ;
-                        this->mesh_grid_2[i][j].vol_mass = this->mesh_grid_1[i][j].vol_mass ;
-                        this->mesh_grid_2[i][j].speed[1] = this->mesh_grid_1[i][j].speed[1] ;
-
+                        else {
+                                this->mesh_grid_1[i][j].turb_en=0.0001 ;
+                                this->mesh_grid_1[i][j].turb_dis=0.0001 ;
+                        }
+                        this->mesh_grid_2[i][j].speed[0] = this->mesh_grid_1[i][j].speed[0];
+                        this->mesh_grid_2[i][j].speed[1] = this->mesh_grid_1[i][j].speed[1];
+                        this->mesh_grid_2[i][j].temperature = this->mesh_grid_1[i][j].temperature;
+                        this->mesh_grid_2[i][j].pressure = this->mesh_grid_1[i][j].pressure;
+                        this->mesh_grid_2[i][j].vol_mass = this->mesh_grid_1[i][j].vol_mass;
+                        this->mesh_grid_2[i][j].turb_en = this->mesh_grid_1[i][j].turb_en;
+                        this->mesh_grid_2[i][j].turb_dis = this->mesh_grid_1[i][j].turb_dis;
                 }
         }
 }

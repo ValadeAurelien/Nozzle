@@ -299,7 +299,8 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
                         if (arg_val == "2") {this->arglist.diff_eq_solver_algo = PG_cyl;}
                         else {
                                 if (arg_val == "3") {this->arglist.diff_eq_solver_algo = VDW_cyl;}
-                                else {throw "AI: Invalid choice of differential solver algorithm";}
+                                        if (arg_val == "4") {this->arglist.diff_eq_solver_algo = PG_cart_turb;}
+                                        else {throw "AI: Invalid choice of differential solver algorithm";}
                         }
                 }
         }
