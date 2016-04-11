@@ -141,6 +141,22 @@ class Diff_Eq_Solver
                 data_t deriv_x_heat_flux_x_turb(int i, int j);
                 data_t deriv_y_heat_flux_y_turb(int i, int j);
                 data_t diver_heat_flux_turb(int i, int j);
+                data_t diver_rhovk(int i, int j);
+                data_t deriv_x_rhovxk(int i, int j);
+                data_t deriv_y_rhovyk(int i, int j);
+                data_t diver_mudk(int i, int j);
+                data_t deriv_x_mudxk(int i, int j);
+                data_t deriv_y_mudyk(int i, int j);
+                data_t deriv_x_k(int i, int j);
+                data_t deriv_y_k(int i, int j);
+                data_t diver_rhovepsilon(int i, int j);
+                data_t deriv_x_rhovxepsilon(int i, int j);
+                data_t deriv_y_rhovyepsilon(int i, int j);
+                data_t diver_mudepsilon(int i, int j);
+                data_t deriv_x_mudxepsilon(int i, int j);
+                data_t deriv_y_mudyepsilon(int i, int j);
+                data_t deriv_x_epsilon(int i, int j);
+                data_t deriv_y_epsilon(int i, int j);
 
                 bool is_in(int i, int j);
         
