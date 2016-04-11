@@ -561,14 +561,14 @@ data_t Diff_Eq_Solver::diver_mudk(int i, int j) {
 
 data_t Diff_Eq_Solver::deriv_x_mudxk(int i, int j) {
 	return(
-	( (mu_t(i+1,j)/sig_k+this->arglist_pt->dyn_visc)*deriv_x_k(i+1,j) - (mu_t(i-1)/sig_k+this->arglist_pt->dyn_visc)*deriv_x_k(i-1,j))
+	( (mu_t(i+1,j)/sig_k+this->arglist_pt->dyn_visc)*deriv_x_k(i+1,j) - (mu_t(i-1,j)/sig_k+this->arglist_pt->dyn_visc)*deriv_x_k(i-1,j))
 	/ (2*this->arglist_pt->space_step)
 	);
 }
 
 data_t Diff_Eq_Solver::deriv_y_mudyk(int i, int j) {
 	return(
-	( (mu_t(j+1)/sig_k+this->arglist_pt->dyn_visc)*deriv_y_k(i,j+1) - (mu_t(j-1)/sig_k+this->arglist_pt->dyn_visc)*deriv_y_k(i,j-1))
+	( (mu_t(i,j+1)/sig_k+this->arglist_pt->dyn_visc)*deriv_y_k(i,j+1) - (mu_t(i,j-1)/sig_k+this->arglist_pt->dyn_visc)*deriv_y_k(i,j-1))
 	/ (2*this->arglist_pt->space_step)
 	);
 }
@@ -621,14 +621,14 @@ data_t Diff_Eq_Solver::diver_mudepsilon(int i, int j) {
 
 data_t Diff_Eq_Solver::deriv_x_mudxepsilon(int i, int j) {
 	return(
-	((mu_t(i+1)/sig_e+this->arglist_pt->dyn_visc)*deriv_x_epsilon(i+1,j) - (mu_t(i-1)/sig_e+this->arglist_pt->dyn_visc)*deriv_x_epsilon(i-1,j))
+	((mu_t(i+1,j)/sig_e+this->arglist_pt->dyn_visc)*deriv_x_epsilon(i+1,j) - (mu_t(i-1,j)/sig_e+this->arglist_pt->dyn_visc)*deriv_x_epsilon(i-1,j))
 	/ (2*this->arglist_pt->space_step)
 	);
 }
 
 data_t Diff_Eq_Solver::deriv_y_mudyepsilon(int i, int j) {
 	return(
-	( (mu_t(j+1)/sig_e+this->arglist_pt->dyn_visc)*deriv_y_epsilon(i,j+1) - (mu_t(j-1)/sig_e+this->arglist_pt->dyn_visc)*deriv_y_epsilon(i,j-1))
+	( (mu_t(i,j+1)/sig_e+this->arglist_pt->dyn_visc)*deriv_y_epsilon(i,j+1) - (mu_t(i,j-1)/sig_e+this->arglist_pt->dyn_visc)*deriv_y_epsilon(i,j-1))
 	/ (2*this->arglist_pt->space_step)
 	);
 }
