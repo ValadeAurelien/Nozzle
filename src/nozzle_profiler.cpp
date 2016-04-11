@@ -149,8 +149,8 @@ void Nozzle_Profiler::set_init_conditions()
                                 this->mesh_grid_1[i][j].turb_dis=0;
                         }
                         else {
-                                this->mesh_grid_1[i][j].turb_en=1 ;
-                                this->mesh_grid_1[i][j].turb_dis=1 ;
+                                this->mesh_grid_1[i][j].turb_en=0.0001 ;
+                                this->mesh_grid_1[i][j].turb_dis=0.0001 ;
                         }
                         this->mesh_grid_2[i][j].speed[0] = this->mesh_grid_1[i][j].speed[0];
                         this->mesh_grid_2[i][j].speed[1] = this->mesh_grid_1[i][j].speed[1];
