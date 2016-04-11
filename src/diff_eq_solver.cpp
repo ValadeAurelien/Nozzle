@@ -376,8 +376,10 @@ data_t Diff_Eq_Solver::deriv_y_vtauy(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::mu_t(int i, int j) {
-	
+	if (not(mesh_grid_1[i][j].is_wall)) {
 	return( c_mu*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_en,2)/mesh_grid_1[i][j].turb_dis);
+	}
+	else { return(0); }
 }
 
 data_t Diff_Eq_Solver::lambda_t(int i, int j) {
