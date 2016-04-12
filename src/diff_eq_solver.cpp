@@ -218,6 +218,7 @@ data_t Diff_Eq_Solver::r(int i) {
         return(this->arglist_pt->space_step*(this->arglist_pt->x_size-i));
 }
 
+//dérivée par rapport à r de r*rho*v_r (cyl)
 data_t Diff_Eq_Solver::deriv_r_rrhovr(int i, int j) {
         return(
         (r(i-1)*mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0]-r(i+1)*mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0])
@@ -225,6 +226,7 @@ data_t Diff_Eq_Solver::deriv_r_rrhovr(int i, int j) {
         );
 }
 
+//toutes les dérivées de la vitesse en cartésiennes
 data_t Diff_Eq_Solver::deriv_x_vx(int i, int j) {
 	return(
 	(mesh_grid_1[i+1][j].speed[0]-mesh_grid_1[i-1][j].speed[0])
@@ -253,6 +255,8 @@ data_t Diff_Eq_Solver::deriv_y_vy(int i, int j) {
 	);
 }
 
+//le "stress" moléculaire : c'est la contrainte moléculaire classique (loi de Stokes)
+//attention que la contrainte est symétrique, mol_stress_yx=mol_stress_xy
 data_t Diff_Eq_Solver::mol_stress_xy(int i, int j) {
 	return(2.0*this->arglist_pt->dyn_visc*strain_xy(i,j));
 }
@@ -265,6 +269,8 @@ data_t Diff_Eq_Solver::mol_stress_yy(int i, int j) {
 	return(2.0*this->arglist_pt->dyn_visc*(2.0/3.0*strain_yy(i,j)-1.0/3.0*strain_xx(i,j)));
 }
 
+//le "strain" : c'est le déplacement utilisé dans le calcul de la contrainte (ici en cartésiennes)
+//attention que le déplacement est symétrique, strain_xy=strain_yx
 data_t Diff_Eq_Solver::strain_xy(int i, int j) {
 	return(1.0/2.0*(deriv_y_vx(i,j)+deriv_x_vy(i,j)));
 }
@@ -277,6 +283,8 @@ data_t Diff_Eq_Solver::strain_yy(int i, int j) {
 	return(deriv_y_vy(i,j));
 }
 
+//les dérivées de la contrainte moléculaire pour le modèle non turbulent
+//attention : double dérivée peut sortir du tableau, si ça sort on met 0
 data_t Diff_Eq_Solver::deriv_y_tauxy(int i, int j) {
 	if (is_in(i,j+2) && is_in(i,j-2)) {
 		return(
@@ -325,12 +333,14 @@ data_t Diff_Eq_Solver::deriv_x_tauyx(int i, int j) {
 	}
 }
 
+//la divergence de la contrainte*vitesse (en cartésiennes non turbulentes)
 data_t Diff_Eq_Solver::diver_vtau(int i, int j) {
 	return(
 	deriv_x_vtaux(i,j)+deriv_y_vtauy(i,j)
 	);
 }
 
+//la contrainte*vitesse (en cartésiennes non turbulentes)
 data_t Diff_Eq_Solver::vtaux(int i, int j) {
 	return(
 	mesh_grid_1[i][j].speed[0]*mol_stress_xx(i,j)+mesh_grid_1[i][j].speed[1]*mol_stress_xy(i,j)
@@ -343,6 +353,8 @@ data_t Diff_Eq_Solver::vtauy(int i, int j) {
 	);
 }
 
+//les dérivées de contrainte*vitesse (en cartésiennes non tubulentes)
+//attention à ne pas sortir du tableau
 data_t Diff_Eq_Solver::deriv_x_vtaux(int i, int j) {
 	if (is_in(i+2,j) && is_in(i-2,j)) {
 		return(
@@ -367,6 +379,7 @@ data_t Diff_Eq_Solver::deriv_y_vtauy(int i, int j) {
 	}
 }
 
+//définition de la viscosité turbulente
 data_t Diff_Eq_Solver::mu_t(int i, int j) {
 	if (not(mesh_grid_1[i][j].is_wall)) {
 	return( c_mu*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_en,2)/mesh_grid_1[i][j].turb_dis);
@@ -374,12 +387,14 @@ data_t Diff_Eq_Solver::mu_t(int i, int j) {
 	else { return(0); }
 }
 
+//définition de la conductivité thermique turbulente
 data_t Diff_Eq_Solver::lambda_t(int i, int j) {
 	return(
 	5.0/2.0*R/this->arglist_pt->mol_mass*mu_t(i,j)/sig_t
 	);
 }
 
+//définition du flux de chaleur turbulent (en cartésiennes)
 data_t Diff_Eq_Solver::heat_flux_x_turb(int i, int j) {
 	return((this->arglist_pt->lambda+lambda_t(i,j))*deriv_x_temp(i,j));
 }
@@ -388,10 +403,13 @@ data_t Diff_Eq_Solver::heat_flux_y_turb(int i, int j) {
 	return((this->arglist_pt->lambda+lambda_t(i,j))*deriv_y_temp(i,j));
 }
 
+//divergence du flux de chaleur turbulent (en cartésiennes)
 data_t Diff_Eq_Solver::diver_heat_flux_turb(int i, int j) {
 	return(deriv_x_heat_flux_x_turb(i,j)+deriv_y_heat_flux_y_turb(i,j));
 }
 
+//les dérivées du flux de chaleur turbulent (en cartésiennes)
+//attention à ne pas sortir du tableau avec la double dérivée
 data_t Diff_Eq_Solver::deriv_x_heat_flux_x_turb(int i, int j) {
 	if (is_in(i+2,j) && is_in(i-2,j)) {
 		return(
@@ -400,7 +418,7 @@ data_t Diff_Eq_Solver::deriv_x_heat_flux_x_turb(int i, int j) {
 		);
 	}
 	else {
-	return(0);
+		return(0);
 	}
 }
 
@@ -416,12 +434,14 @@ data_t Diff_Eq_Solver::deriv_y_heat_flux_y_turb(int i, int j) {
 	}
 }
 
+//la divergence de contrainte_turbulente*vitesse  (cartésiennes)
 data_t Diff_Eq_Solver::diver_vtau_turb(int i, int j) {
 	return(
 	deriv_x_vtaux_turb(i,j)+deriv_y_vtauy_turb(i,j)
 	);
 }
 
+//définition de contrainte_turbulente*vitesse (cartésiennes)
 data_t Diff_Eq_Solver::vtaux_turb(int i, int j) {
 	return(
 	mesh_grid_1[i][j].speed[0]*tot_stress_xx(i,j)+mesh_grid_1[i][j].speed[1]*tot_stress_xy(i,j)
@@ -434,6 +454,8 @@ data_t Diff_Eq_Solver::vtauy_turb(int i, int j) {
 	);
 }
 
+//dérivées de la contrainte_turbulente*vitesse (cartésiennes)
+//attention à ne pas sortir du tableau
 data_t Diff_Eq_Solver::deriv_x_vtaux_turb(int i, int j) {
 	if (is_in(i+2,j) && is_in(i-2,j)) {
 		return(
@@ -506,6 +528,7 @@ data_t Diff_Eq_Solver::deriv_x_tauyx_turb(int i, int j) {
 	}
 }
 
+//définition de la contrainte totale (moléculaire + turbulente)
 data_t Diff_Eq_Solver::tot_stress_yy(int i, int j) {
 	return(mol_stress_yy(i,j)+turb_stress_yy(i,j));
 }
