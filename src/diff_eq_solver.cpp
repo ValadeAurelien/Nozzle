@@ -14,7 +14,8 @@
 #include <cmath>
 #include <vector>
 
-#define R 8.314
+#define R 8.314 //constante des gaz parfaits
+//toutes les constantes relatives au modèle k-epsilon
 #define sig_k 1
 #define sig_e 1.3
 #define c_e_1 1.45
@@ -38,6 +39,7 @@ Diff_Eq_Solver::Diff_Eq_Solver(Usr_Interface *UI,Data_Mapper *DM, arglist_struct
         this->thrust = thrust;
 }
 
+//fonction qui calcule le carré de la vitesse, le troisième argument vaut 1:mesh_grid_1 2:mesh_grid_2
 data_t Diff_Eq_Solver::speed2(int i, int j, int k) {
         if (k==1) {
                 return(pow(mesh_grid_1[i][j].speed[0],2) + pow(mesh_grid_1[i][j].speed[1],2));
@@ -47,6 +49,7 @@ data_t Diff_Eq_Solver::speed2(int i, int j, int k) {
         }
 }
 
+//la pression totale est rho*e+P
 data_t Diff_Eq_Solver::pres_tot_PG(int i, int j) {
         return(
         mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+mesh_grid_1[i][j].pressure
@@ -59,6 +62,7 @@ data_t Diff_Eq_Solver::pres_tot_VDW(int i, int j) {
         );
 }
 
+//l'énergie totale est u+e_c
 data_t Diff_Eq_Solver::en_tot_PG(int i, int j) {
         return(
         5.0/2.0*R/this->arglist_pt->mol_mass*mesh_grid_1[i][j].temperature + 1.0/2.0*speed2(i,j,1)
@@ -71,12 +75,14 @@ data_t Diff_Eq_Solver::en_tot_VDW(int i, int j) {
         );
 }
 
+//divergence de rho*v en cartésiennes
 data_t Diff_Eq_Solver::diver_rhov_c(int i, int j) {
         return(
              deriv_x_rhovx(i,j)+deriv_y_rhovy(i,j)
         );
 }
 
+//dérivée de la température par rapport à x et y
 data_t Diff_Eq_Solver::deriv_x_temp(int i, int j) {
         return(
         (1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i+1][j].temperature-mesh_grid_1[i-1][j].temperature)
@@ -91,6 +97,7 @@ data_t Diff_Eq_Solver::deriv_y_temp(int i, int j) {
         );
 }
 
+//dérivée seconde de la température par rapport à x et y. On l'écrit en éléments finis en faisant gaffe que le grad de T au mur est nul (continuité)
 data_t Diff_Eq_Solver::deriv2_x_temp(int i, int j) {
         return(
         ((1-mesh_grid_1[i+1][j].is_wall)*(mesh_grid_1[i+1][j].temperature-mesh_grid_1[i][j].temperature)-(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i][j].temperature-mesh_grid_1[i-1][j].temperature))
@@ -105,6 +112,7 @@ data_t Diff_Eq_Solver::deriv2_y_temp(int i, int j) {
         );
 }
 
+//dérivée de la pression par rapport à x et y
 data_t Diff_Eq_Solver::deriv_x_pres(int i, int j) {
         return(
         (1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i+1][j].pressure-mesh_grid_1[i-1][j].pressure)
@@ -119,6 +127,7 @@ data_t Diff_Eq_Solver::deriv_y_pres(int i, int j) {
         );
 }
 
+//dérivée par rapport à x de rho*v_x
 data_t Diff_Eq_Solver::deriv_x_rhovx(int i, int j) {
         return(
         (mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0]-mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0])
@@ -126,6 +135,7 @@ data_t Diff_Eq_Solver::deriv_x_rhovx(int i, int j) {
         );
 }
 
+//dérivée par rapport à y de rho*v_x
 data_t Diff_Eq_Solver::deriv_y_rhovx(int i, int j) {
         return(
         (mesh_grid_1[i][j+1].vol_mass*mesh_grid_1[i][j+1].speed[0]-mesh_grid_1[i][j-1].vol_mass*mesh_grid_1[i][j-1].speed[0])
@@ -133,6 +143,7 @@ data_t Diff_Eq_Solver::deriv_y_rhovx(int i, int j) {
         );
 }
 
+//dérivée par rapport à x de rho*v_y
 data_t Diff_Eq_Solver::deriv_x_rhovy(int i, int j) {
         return(
         (mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[1]-mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[1])
