@@ -1,3 +1,0 @@
-#! /bin/bash
-
-rsync avalade@servsls.ens:~/Nozzle/datafiles/$1 ./datafiles/ -r 
