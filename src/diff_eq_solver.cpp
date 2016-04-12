@@ -716,6 +716,13 @@ void Diff_Eq_Solver::copy_case(int i, int j, int k, int l) {
         mesh_grid_2[i][j].speed[1] = mesh_grid_2[k][l].speed[1];
 }
 
+data_t Diff_Eq_Solver::save_thrust() {
+	thrusty=0;
+   	for (int k = 0; k<this->arglist_pt->x_size; k++) {
+      		thrusty+= -mesh_grid_1[k][0].speed[1]*pow(this->arglist_pt->space_step,2);
+   	}
+}
+
 
 // Une iteration totale
 
@@ -751,56 +758,40 @@ void Diff_Eq_Solver::calc_iteration_PG_cart() {
 }
 
 void Diff_Eq_Solver::calc_iteration_PG_cart_turb() {
-        
-  register int i,j;
-  for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
-    for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
-        if (not(mesh_grid_1[i][j].is_wall)) {
-        this->update_vol_mass(i,j);
-        
-	this->update_speed_x_turb(i,j);
-        
-        this->update_speed_y_turb(i,j);
-        
-        this->update_temp_PG_turb(i,j);
-        
-        this->update_pres_PG(i,j);
-        
-        this->update_k_PG_turb(i,j);
-        
-        this->update_epsilon_PG_turb(i,j);
-        }
-      }
-   }
-   for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
-           copy_case(i,0,i,1);
-   }
-   for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
-           copy_case(0,j,1,j);
-           copy_case(this->arglist_pt->x_size-1,j,this->arglist_pt->x_size-2,j);
-   }
-   
-   this->exchange_mesh_grid_pts();
-	
+	register int i,j;
+  	for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
+    		for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
+        		if (not(mesh_grid_1[i][j].is_wall)) {
+        		this->update_vol_mass(i,j);
+        		this->update_speed_x_turb(i,j);
+        		this->update_speed_y_turb(i,j);
+		        this->update_temp_PG_turb(i,j);
+		        this->update_pres_PG(i,j);
+		        this->update_k_PG_turb(i,j);
+		        this->update_epsilon_PG_turb(i,j);
+        		}
+      		}
+   	}
+   	for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
+           	copy_case(i,0,i,1);
+   	}
+   	for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
+           	copy_case(0,j,1,j);
+           	copy_case(this->arglist_pt->x_size-1,j,this->arglist_pt->x_size-2,j);
+   	}
+   	this->exchange_mesh_grid_pts();
 }
 
 void Diff_Eq_Solver::calc_iteration_PG_cyl() {
-        
         register int i,j;
         for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
                 for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
       			if (not(mesh_grid_1[i][j].is_wall)) {
-      			
                         this->update_vol_mass_cyl(i,j);
-        
                         this->update_speed_r_cyl(i,j);
-        
                         this->update_speed_z_cyl(i,j);
-        
                         this->update_temp_PG_cyl(i,j);
-        
                         this->update_pres_PG(i,j);
-                        
       			}
                 }
         }
@@ -811,7 +802,6 @@ void Diff_Eq_Solver::calc_iteration_PG_cyl() {
                 copy_case(0,j,1,j);
                 copy_case(this->arglist_pt->x_size-1,j,this->arglist_pt->x_size-2,j);
         }
-
         this->exchange_mesh_grid_pts();
 }
 
@@ -821,13 +811,9 @@ void Diff_Eq_Solver::calc_iteration_VDW_cart() {
                 for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
       			if (not(mesh_grid_1[i][j].is_wall)) {
                         this->update_vol_mass(i,j);
-        
                         this->update_speed_x(i,j);
-        
                         this->update_speed_y(i,j);
-        
                         this->update_temp_VDW(i,j);
-        
                         this->update_pres_VDW(i,j);
       			}
                 }
@@ -839,25 +825,18 @@ void Diff_Eq_Solver::calc_iteration_VDW_cart() {
                 copy_case(0,j,1,j);
                 copy_case(this->arglist_pt->x_size-1,j,this->arglist_pt->x_size-2,j);
         }
-   
         this->exchange_mesh_grid_pts();
 }
 
 void Diff_Eq_Solver::calc_iteration_VDW_cyl() {
-        
         register int i,j;
         for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
                 for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
       			if (not(mesh_grid_1[i][j].is_wall)) {
-      			
                         this->update_vol_mass_cyl(i,j);
-
                         this->update_speed_r_cyl(i,j);
-        
                         this->update_speed_z_cyl(i,j);
-        
                         this->update_temp_VDW_cyl(i,j);
-        
                         this->update_pres_VDW(i,j);
       			}
                 }
@@ -869,58 +848,53 @@ void Diff_Eq_Solver::calc_iteration_VDW_cyl() {
                 copy_case(0,j,1,j);
                 copy_case(this->arglist_pt->x_size-1,j,this->arglist_pt->x_size-2,j);
         }
-
         this->exchange_mesh_grid_pts();
 }
 
 
-void Diff_Eq_Solver::solve_PG_cart()
-{
-	data_t thrusty = 0.;
+void Diff_Eq_Solver::solve_PG_cart() {
         register int i;
         for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
         	this->calc_iteration_PG_cart();
-        	
-        	thrusty=0;
-   		for (int k = 0; k<this->arglist_pt->x_size; k++) {
-      			thrusty+= -mesh_grid_1[k][0].speed[1]*pow(this->arglist_pt->space_step,2);
-   		}
-   		this->thrust[i] = thrusty;
+   		this->thrust[i] = save_thrust();
         }
         this->DM->thrust_plotter(&(this->thrust));
 }
 
 void Diff_Eq_Solver::solve_PG_cart_turb() {
-	data_t thrusty = 0.;
         register int i;
         for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
         	this->calc_iteration_PG_cart_turb();
-        	
-        	thrusty=0;
-   		for (int k = 0; k<this->arglist_pt->x_size; k++) {
-      			thrusty+= -mesh_grid_1[k][0].speed[1]*pow(this->arglist_pt->space_step,2);
-   		}
-   		this->thrust[i] = thrusty;
+        	this->thrust[i] = save_thrust();
         }
         this->DM->thrust_plotter(&(this->thrust));
 }
 
-void Diff_Eq_Solver::solve_VDW_cart()
-{
+void Diff_Eq_Solver::solve_VDW_cart() {
         register int i;
-        for (i=0; i<this->arglist_pt->iter_number_solver; i++) { this->calc_iteration_VDW_cart(); }
+        for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
+        	this->calc_iteration_VDW_cart();
+        	this->thrust[i] = save_thrust();
+        }
+        this->DM->thrust_plotter(&(this->thrust));
 }
 
-void Diff_Eq_Solver::solve_PG_cyl()
-{
+void Diff_Eq_Solver::solve_PG_cyl() {
         register int i;
-        for (i=0; i<this->arglist_pt->iter_number_solver; i++) { this->calc_iteration_PG_cyl(); }
+        for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
+        	this->calc_iteration_PG_cyl();
+        	this->thrust[i] = save_thrust();
+        }
+        this->DM->thrust_plotter(&(this->thrust));
 }
 
-void Diff_Eq_Solver::solve_VDW_cyl()
-{
+void Diff_Eq_Solver::solve_VDW_cyl() {
         register int i;
-        for (i=0; i<this->arglist_pt->iter_number_solver; i++) { this->calc_iteration_VDW_cyl(); }
+        for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
+        	this->calc_iteration_VDW_cyl();
+        	this->thrust[i] = save_thrust();
+        }
+        this->DM->thrust_plotter(&(this->thrust));
 }
 
 
@@ -950,6 +924,5 @@ void Diff_Eq_Solver::solve()
 
                 default:
                         throw "DES : Bad solving algorithm";
-
         }
 }
