@@ -98,6 +98,7 @@ class Diff_Eq_Solver
                 data_t heat_flux_y_turb(int i, int j);
                 data_t mu_t(int i, int j);
                 data_t lambda_t(int i, int j);
+                data_t save_thrust();
 
                 data_t diver_rhov_c(int i, int j);//la divergence en cartésiennes
                 data_t deriv_x_pres(int i, int j);//première composante du gradient de pression en cartésiennes

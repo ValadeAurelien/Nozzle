@@ -14,7 +14,8 @@
 #include <cmath>
 #include <vector>
 
-#define R 8.314
+#define R 8.314 //constante des gaz parfaits
+//toutes les constantes relatives au modèle k-epsilon
 #define sig_k 1
 #define sig_e 1.3
 #define c_e_1 1.45
@@ -27,6 +28,7 @@
 
 // ======== implementation ========
 
+//le contruscteur : on crée un vecteur thrust qui va contenir la liste des valeurs de la poussée au cours du temps
 Diff_Eq_Solver::Diff_Eq_Solver(Usr_Interface *UI,Data_Mapper *DM, arglist_struct *arglist_pt, mesh_grid_t *mesh_grid_pt1, mesh_grid_t *mesh_grid_pt2) {
         this->UI = UI;
         this->DM = DM;
@@ -37,8 +39,8 @@ Diff_Eq_Solver::Diff_Eq_Solver(Usr_Interface *UI,Data_Mapper *DM, arglist_struct
         this->thrust = thrust;
 }
 
+//fonction qui calcule le carré de la vitesse, le troisième argument vaut 1:mesh_grid_1 2:mesh_grid_2
 data_t Diff_Eq_Solver::speed2(int i, int j, int k) {
-        
         if (k==1) {
                 return(pow(mesh_grid_1[i][j].speed[0],2) + pow(mesh_grid_1[i][j].speed[1],2));
         }
@@ -47,43 +49,41 @@ data_t Diff_Eq_Solver::speed2(int i, int j, int k) {
         }
 }
 
+//la pression totale est rho*e+P
 data_t Diff_Eq_Solver::pres_tot_PG(int i, int j) {
-        
         return(
         mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+mesh_grid_1[i][j].pressure
         );
 }
 
 data_t Diff_Eq_Solver::pres_tot_VDW(int i, int j) {
-        
         return(
         mesh_grid_1[i][j].vol_mass*en_tot_VDW(i,j)+mesh_grid_1[i][j].pressure
         );
 }
 
+//l'énergie totale est u+e_c
 data_t Diff_Eq_Solver::en_tot_PG(int i, int j) {
-        
         return(
         5.0/2.0*R/this->arglist_pt->mol_mass*mesh_grid_1[i][j].temperature + 1.0/2.0*speed2(i,j,1)
         );
 }
 
 data_t Diff_Eq_Solver::en_tot_VDW(int i, int j) {
-        
         return(
         5.0/2.0*R*mesh_grid_1[i][j].temperature/this->arglist_pt->mol_mass + 1.0/2.0*speed2(i,j,1) - this->arglist_pt->VDW_a_coef*mesh_grid_1[i][j].vol_mass/pow(this->arglist_pt->mol_mass,2)
         );
 }
 
+//divergence de rho*v en cartésiennes
 data_t Diff_Eq_Solver::diver_rhov_c(int i, int j) {
-        
         return(
              deriv_x_rhovx(i,j)+deriv_y_rhovy(i,j)
         );
 }
 
+//dérivée de la température par rapport à x et y
 data_t Diff_Eq_Solver::deriv_x_temp(int i, int j) {
-        
         return(
         (1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i+1][j].temperature-mesh_grid_1[i-1][j].temperature)
         / (2*this->arglist_pt->space_step)
@@ -91,15 +91,14 @@ data_t Diff_Eq_Solver::deriv_x_temp(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_y_temp(int i, int j) {
-        
         return(
         (1-mesh_grid_1[i][j+1].is_wall)*(1-mesh_grid_1[i][j-1].is_wall)*(mesh_grid_1[i][j+1].temperature-mesh_grid_1[i][j-1].temperature)
         / (2*this->arglist_pt->space_step)
         );
 }
 
+//dérivée seconde de la température par rapport à x et y. On l'écrit en éléments finis en faisant gaffe que le grad de T au mur est nul (continuité)
 data_t Diff_Eq_Solver::deriv2_x_temp(int i, int j) {
-        
         return(
         ((1-mesh_grid_1[i+1][j].is_wall)*(mesh_grid_1[i+1][j].temperature-mesh_grid_1[i][j].temperature)-(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i][j].temperature-mesh_grid_1[i-1][j].temperature))
         / (pow(this->arglist_pt->space_step,2))
@@ -107,14 +106,14 @@ data_t Diff_Eq_Solver::deriv2_x_temp(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv2_y_temp(int i, int j) {
-        
         return(
         ((1-mesh_grid_1[i][j+1].is_wall)*(mesh_grid_1[i][j+1].temperature-mesh_grid_1[i][j].temperature)-(1-mesh_grid_1[i][j-1].is_wall)*(mesh_grid_1[i][j].temperature-mesh_grid_1[i][j-1].temperature))
         / (pow(this->arglist_pt->space_step,2))
         );
 }
+
+//dérivée de la pression par rapport à x et y
 data_t Diff_Eq_Solver::deriv_x_pres(int i, int j) {
-        
         return(
         (1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i+1][j].pressure-mesh_grid_1[i-1][j].pressure)
         / (this->arglist_pt->space_step*2)
@@ -122,47 +121,46 @@ data_t Diff_Eq_Solver::deriv_x_pres(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_y_pres(int i, int j) {
-        
         return(
         (1-mesh_grid_1[i][j+1].is_wall)*(1-mesh_grid_1[i][j-1].is_wall)*(mesh_grid_1[i][j+1].pressure-mesh_grid_1[i][j-1].pressure)
         / (this->arglist_pt->space_step*2)
         );
 }
 
+//dérivée par rapport à x de rho*v_x
 data_t Diff_Eq_Solver::deriv_x_rhovx(int i, int j) {
-        
         return(
         (mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0]-mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0])
         / (2*this->arglist_pt->space_step)
         );
 }
 
+//dérivée par rapport à y de rho*v_x
 data_t Diff_Eq_Solver::deriv_y_rhovx(int i, int j) {
-        
         return(
         (mesh_grid_1[i][j+1].vol_mass*mesh_grid_1[i][j+1].speed[0]-mesh_grid_1[i][j-1].vol_mass*mesh_grid_1[i][j-1].speed[0])
         / (this->arglist_pt->space_step*2)
         );
 }
 
+//dérivée par rapport à x de rho*v_y
 data_t Diff_Eq_Solver::deriv_x_rhovy(int i, int j) {
-        
         return(
         (mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[1]-mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[1])
         / (this->arglist_pt->space_step*2)
         );
 }
 
+//dérivée par rapport à y de rho*v_y
 data_t Diff_Eq_Solver::deriv_y_rhovy(int i, int j) {
-        
         return(
         (mesh_grid_1[i][j+1].vol_mass*mesh_grid_1[i][j+1].speed[1]-mesh_grid_1[i][j-1].vol_mass*mesh_grid_1[i][j-1].speed[1])
         / (this->arglist_pt->space_step*2)
         );
 }
 
+//dérivée par rapport à x (y) de la pression_totale*v_x (v_y), pour le gaz parfait
 data_t Diff_Eq_Solver::deriv_x_prestotPGvx(int i, int j) {
-        
         return(
         (mesh_grid_1[i+1][j].speed[0]*pres_tot_PG(i+1,j)-mesh_grid_1[i-1][j].speed[0]*pres_tot_PG(i-1,j))
         / (this->arglist_pt->space_step*2)
@@ -170,31 +168,30 @@ data_t Diff_Eq_Solver::deriv_x_prestotPGvx(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_y_prestotPGvy(int i, int j) {
-        
         return(
         (mesh_grid_1[i][j+1].speed[1]*pres_tot_PG(i,j+1)-mesh_grid_1[i][j-1].speed[1]*pres_tot_PG(i,j-1))
         / (this->arglist_pt->space_step*2)
         );
 }
 
+//dérivée par rapport à r (coord cyl) de la pression_totale*r*v_r
 data_t Diff_Eq_Solver::deriv_r_prestotPGrvr(int i, int j) {
-        
         return(
         -(r(i+1)*mesh_grid_1[i+1][j].speed[0]*pres_tot_PG(i+1,j)-r(i-1)*mesh_grid_1[i-1][j].speed[0]*pres_tot_PG(i-1,j))
         / (this->arglist_pt->space_step*2)
         );
 }
 
+//dérivée par rapport à r (coord cyl) de la température
 data_t Diff_Eq_Solver::deriv_r_temp(int i, int j) {
-        
         return(
         (1-mesh_grid_1[i+1][j].is_wall)*(1-mesh_grid_1[i-1][j].is_wall)*(mesh_grid_1[i-1][j].temperature-mesh_grid_1[i+1][j].temperature)
         / (this->arglist_pt->space_step*2)
         );
 }
 
+//dérivée par rapport à x (y) de la pression_totale*v_x (v_y), pour le gaz de Van der Waals
 data_t Diff_Eq_Solver::deriv_x_prestotVDWvx(int i, int j) {
-        
         return(
         (mesh_grid_1[i+1][j].speed[0]*pres_tot_VDW(i+1,j)-mesh_grid_1[i-1][j].speed[0]*pres_tot_VDW(i-1,j))
         / (this->arglist_pt->space_step*2)
@@ -202,35 +199,35 @@ data_t Diff_Eq_Solver::deriv_x_prestotVDWvx(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_y_prestotVDWvy(int i, int j) {
-
         return(
         (mesh_grid_1[i][j+1].speed[1]*pres_tot_VDW(i,j+1)-mesh_grid_1[i][j-1].speed[1]*pres_tot_VDW(i,j-1))
         / (this->arglist_pt->space_step*2)
         );
 }
 
+//dérivée par rapport à r (coord cyl) de la pression_totale*r*v_r, pour le gaz de Van der Waals
 data_t Diff_Eq_Solver::deriv_r_prestotVDWrvr(int i, int j) {
-        
         return(
         -(r(i+1)*mesh_grid_1[i+1][j].speed[0]*pres_tot_VDW(i+1,j)-r(i-1)*mesh_grid_1[i-1][j].speed[0]*pres_tot_VDW(i-1,j))
         / (this->arglist_pt->space_step*2)
         );
 }
 
+//définition de la coordonnée cylindrique r (=-i en fait)
 data_t Diff_Eq_Solver::r(int i) {
         return(this->arglist_pt->space_step*(this->arglist_pt->x_size-i));
 }
 
+//dérivée par rapport à r de r*rho*v_r (cyl)
 data_t Diff_Eq_Solver::deriv_r_rrhovr(int i, int j) {
-        
         return(
         (r(i-1)*mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0]-r(i+1)*mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0])
         / (this->arglist_pt->space_step*2)
         );
 }
 
+//toutes les dérivées de la vitesse en cartésiennes
 data_t Diff_Eq_Solver::deriv_x_vx(int i, int j) {
-	
 	return(
 	(mesh_grid_1[i+1][j].speed[0]-mesh_grid_1[i-1][j].speed[0])
 	/ (this->arglist_pt->space_step*2)
@@ -238,7 +235,6 @@ data_t Diff_Eq_Solver::deriv_x_vx(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_y_vx(int i, int j) {
-
 	return(
 	(mesh_grid_1[i][j+1].speed[0]-mesh_grid_1[i][j-1].speed[0])
 	/ (this->arglist_pt->space_step*2)
@@ -246,7 +242,6 @@ data_t Diff_Eq_Solver::deriv_y_vx(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_x_vy(int i, int j) {
-
 	return(
 	(mesh_grid_1[i+1][j].speed[1]-mesh_grid_1[i-1][j].speed[1])
 	/ (this->arglist_pt->space_step*2)
@@ -254,25 +249,14 @@ data_t Diff_Eq_Solver::deriv_x_vy(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_y_vy(int i, int j) {
-
 	return(
 	(mesh_grid_1[i][j+1].speed[1]-mesh_grid_1[i][j-1].speed[1])
 	/ (this->arglist_pt->space_step*2)
 	);
 }
 
-data_t Diff_Eq_Solver::mol_stress_xy(int i, int j) {
-	return(2.0*this->arglist_pt->dyn_visc*strain_xy(i,j));
-}
-
-data_t Diff_Eq_Solver::mol_stress_xx(int i, int j) {
-	return(2.0*this->arglist_pt->dyn_visc*(2.0/3.0*strain_xx(i,j)-1.0/3.0*strain_yy(i,j)));
-}
-
-data_t Diff_Eq_Solver::mol_stress_yy(int i, int j) {
-	return(2.0*this->arglist_pt->dyn_visc*(2.0/3.0*strain_yy(i,j)-1.0/3.0*strain_xx(i,j)));
-}
-
+//le "strain" : c'est le déplacement utilisé dans le calcul de la contrainte (ici en cartésiennes)
+//attention que le déplacement est symétrique, strain_xy=strain_yx
 data_t Diff_Eq_Solver::strain_xy(int i, int j) {
 	return(1.0/2.0*(deriv_y_vx(i,j)+deriv_x_vy(i,j)));
 }
@@ -285,6 +269,8 @@ data_t Diff_Eq_Solver::strain_yy(int i, int j) {
 	return(deriv_y_vy(i,j));
 }
 
+//les dérivées de la contrainte moléculaire pour le modèle non turbulent
+//attention : double dérivée peut sortir du tableau, si ça sort on met 0
 data_t Diff_Eq_Solver::deriv_y_tauxy(int i, int j) {
 	if (is_in(i,j+2) && is_in(i,j-2)) {
 		return(
@@ -333,12 +319,14 @@ data_t Diff_Eq_Solver::deriv_x_tauyx(int i, int j) {
 	}
 }
 
+//la divergence de la contrainte*vitesse (en cartésiennes non turbulentes)
 data_t Diff_Eq_Solver::diver_vtau(int i, int j) {
 	return(
 	deriv_x_vtaux(i,j)+deriv_y_vtauy(i,j)
 	);
 }
 
+//la contrainte*vitesse (en cartésiennes non turbulentes)
 data_t Diff_Eq_Solver::vtaux(int i, int j) {
 	return(
 	mesh_grid_1[i][j].speed[0]*mol_stress_xx(i,j)+mesh_grid_1[i][j].speed[1]*mol_stress_xy(i,j)
@@ -351,6 +339,8 @@ data_t Diff_Eq_Solver::vtauy(int i, int j) {
 	);
 }
 
+//les dérivées de contrainte*vitesse (en cartésiennes non tubulentes)
+//attention à ne pas sortir du tableau
 data_t Diff_Eq_Solver::deriv_x_vtaux(int i, int j) {
 	if (is_in(i+2,j) && is_in(i-2,j)) {
 		return(
@@ -375,6 +365,7 @@ data_t Diff_Eq_Solver::deriv_y_vtauy(int i, int j) {
 	}
 }
 
+//définition de la viscosité turbulente
 data_t Diff_Eq_Solver::mu_t(int i, int j) {
 	if (not(mesh_grid_1[i][j].is_wall)) {
 	return( c_mu*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_en,2)/mesh_grid_1[i][j].turb_dis);
@@ -382,12 +373,14 @@ data_t Diff_Eq_Solver::mu_t(int i, int j) {
 	else { return(0); }
 }
 
+//définition de la conductivité thermique turbulente
 data_t Diff_Eq_Solver::lambda_t(int i, int j) {
 	return(
 	5.0/2.0*R/this->arglist_pt->mol_mass*mu_t(i,j)/sig_t
 	);
 }
 
+//définition du flux de chaleur turbulent (en cartésiennes)
 data_t Diff_Eq_Solver::heat_flux_x_turb(int i, int j) {
 	return((this->arglist_pt->lambda+lambda_t(i,j))*deriv_x_temp(i,j));
 }
@@ -396,10 +389,13 @@ data_t Diff_Eq_Solver::heat_flux_y_turb(int i, int j) {
 	return((this->arglist_pt->lambda+lambda_t(i,j))*deriv_y_temp(i,j));
 }
 
+//divergence du flux de chaleur turbulent (en cartésiennes)
 data_t Diff_Eq_Solver::diver_heat_flux_turb(int i, int j) {
 	return(deriv_x_heat_flux_x_turb(i,j)+deriv_y_heat_flux_y_turb(i,j));
 }
 
+//les dérivées du flux de chaleur turbulent (en cartésiennes)
+//attention à ne pas sortir du tableau avec la double dérivée
 data_t Diff_Eq_Solver::deriv_x_heat_flux_x_turb(int i, int j) {
 	if (is_in(i+2,j) && is_in(i-2,j)) {
 		return(
@@ -408,7 +404,7 @@ data_t Diff_Eq_Solver::deriv_x_heat_flux_x_turb(int i, int j) {
 		);
 	}
 	else {
-	return(0);
+		return(0);
 	}
 }
 
@@ -424,12 +420,14 @@ data_t Diff_Eq_Solver::deriv_y_heat_flux_y_turb(int i, int j) {
 	}
 }
 
+//la divergence de contrainte_turbulente*vitesse  (cartésiennes)
 data_t Diff_Eq_Solver::diver_vtau_turb(int i, int j) {
 	return(
 	deriv_x_vtaux_turb(i,j)+deriv_y_vtauy_turb(i,j)
 	);
 }
 
+//définition de contrainte_turbulente*vitesse (cartésiennes)
 data_t Diff_Eq_Solver::vtaux_turb(int i, int j) {
 	return(
 	mesh_grid_1[i][j].speed[0]*tot_stress_xx(i,j)+mesh_grid_1[i][j].speed[1]*tot_stress_xy(i,j)
@@ -442,6 +440,8 @@ data_t Diff_Eq_Solver::vtauy_turb(int i, int j) {
 	);
 }
 
+//dérivées de la contrainte_turbulente*vitesse (cartésiennes)
+//attention à ne pas sortir du tableau
 data_t Diff_Eq_Solver::deriv_x_vtaux_turb(int i, int j) {
 	if (is_in(i+2,j) && is_in(i-2,j)) {
 		return(
@@ -514,35 +514,52 @@ data_t Diff_Eq_Solver::deriv_x_tauyx_turb(int i, int j) {
 	}
 }
 
+//définition de la contrainte totale (moléculaire + turbulente)
 data_t Diff_Eq_Solver::tot_stress_yy(int i, int j) {
 	return(mol_stress_yy(i,j)+turb_stress_yy(i,j));
-}
-
-data_t Diff_Eq_Solver::turb_stress_yy(int i, int j) {
-	return(2.0*mu_t(i,j)*(2.0/3.0*strain_yy(i,j)-1.0/3.0*strain_xx(i,j))-2.0/3.0*mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_en);
 }
 
 data_t Diff_Eq_Solver::tot_stress_xx(int i, int j) {
 	return(mol_stress_xx(i,j)+turb_stress_xx(i,j));
 }
 
-data_t Diff_Eq_Solver::turb_stress_xx(int i, int j) {
-	
-	return(2.0*mu_t(i,j)*(2.0/3.0*strain_xx(i,j)-1.0/3.0*strain_yy(i,j))-2.0/3.0*mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_en);
-}
-
 data_t Diff_Eq_Solver::tot_stress_xy(int i, int j) {
 	return(mol_stress_xy(i,j)+turb_stress_xy(i,j));
+}
+
+//définition de la contrainte turbulente (analogie loi de Stokes)
+data_t Diff_Eq_Solver::turb_stress_yy(int i, int j) {
+	return(2.0*mu_t(i,j)*(2.0/3.0*strain_yy(i,j)-1.0/3.0*strain_xx(i,j))-2.0/3.0*mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_en);
+}
+
+data_t Diff_Eq_Solver::turb_stress_xx(int i, int j) {
+	return(2.0*mu_t(i,j)*(2.0/3.0*strain_xx(i,j)-1.0/3.0*strain_yy(i,j))-2.0/3.0*mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_en);
 }
 
 data_t Diff_Eq_Solver::turb_stress_xy(int i, int j) {
 	return(2.0*mu_t(i,j)*strain_xy(i,j));
 }
 
+//le "stress" moléculaire : c'est la contrainte moléculaire classique (loi de Stokes)
+//attention que la contrainte est symétrique, mol_stress_yx=mol_stress_xy
+data_t Diff_Eq_Solver::mol_stress_xy(int i, int j) {
+	return(2.0*this->arglist_pt->dyn_visc*strain_xy(i,j));
+}
+
+data_t Diff_Eq_Solver::mol_stress_xx(int i, int j) {
+	return(2.0*this->arglist_pt->dyn_visc*(2.0/3.0*strain_xx(i,j)-1.0/3.0*strain_yy(i,j)));
+}
+
+data_t Diff_Eq_Solver::mol_stress_yy(int i, int j) {
+	return(2.0*this->arglist_pt->dyn_visc*(2.0/3.0*strain_yy(i,j)-1.0/3.0*strain_xx(i,j)));
+}
+
+//divergence de rho*v*k (modèle k-epsilon) (cartésiennes)
 data_t Diff_Eq_Solver::diver_rhovk(int i, int j) {
 	return(deriv_x_rhovxk(i,j)+deriv_y_rhovyk(i,j));
 }
 
+//dérivées de rho*v_x,y*k (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_rhovxk(int i, int j) {
 	return(
 	(mesh_grid_1[i+1][j].turb_en*mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0]-mesh_grid_1[i-1][j].turb_en*mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0])
@@ -557,10 +574,12 @@ data_t Diff_Eq_Solver::deriv_y_rhovyk(int i, int j) {
 	);
 }
 
+//divergence de mu_tot*grad(k) (cartésiennes)
 data_t Diff_Eq_Solver::diver_mudk(int i, int j) {
 	return(deriv_x_mudxk(i,j)+deriv_y_mudyk(i,j));
 }
 
+//dérivées de mu_tot*grad(k) (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_mudxk(int i, int j) {
 	return(
 	( (mu_t(i+1,j)/sig_k+this->arglist_pt->dyn_visc)*deriv_x_k(i+1,j) - (mu_t(i-1,j)/sig_k+this->arglist_pt->dyn_visc)*deriv_x_k(i-1,j))
@@ -575,6 +594,7 @@ data_t Diff_Eq_Solver::deriv_y_mudyk(int i, int j) {
 	);
 }
 
+//dérivées de k (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_k(int i, int j) {
 	if (is_in(i+1,j) && is_in(i-1,j)) {
 		return(
@@ -599,10 +619,12 @@ data_t Diff_Eq_Solver::deriv_y_k(int i, int j) {
 	}
 }
 
+//divergence de rho*v*epsilon (modèle k-epsilon) (cartésiennes)
 data_t Diff_Eq_Solver::diver_rhovepsilon(int i, int j) {
 	return(deriv_x_rhovxepsilon(i,j)+deriv_y_rhovyepsilon(i,j));
 }
 
+//dérivées de rho*v*epsilon (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_rhovxepsilon(int i, int j) {
 	return(
 	(mesh_grid_1[i+1][j].turb_dis*mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0]-mesh_grid_1[i-1][j].turb_dis*mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0])
@@ -617,10 +639,12 @@ data_t Diff_Eq_Solver::deriv_y_rhovyepsilon(int i, int j) {
 	);
 }
 
+//divergence de mu_tot*grad(epsilon) (cartésiennes)
 data_t Diff_Eq_Solver::diver_mudepsilon(int i, int j) {
 	return(deriv_x_mudxepsilon(i,j)+deriv_y_mudyepsilon(i,j));
 }
 
+//dérivées de mu_tot*grad(epsilon) (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_mudxepsilon(int i, int j) {
 	return(
 	((mu_t(i+1,j)/sig_e+this->arglist_pt->dyn_visc)*deriv_x_epsilon(i+1,j) - (mu_t(i-1,j)/sig_e+this->arglist_pt->dyn_visc)*deriv_x_epsilon(i-1,j))
@@ -635,6 +659,7 @@ data_t Diff_Eq_Solver::deriv_y_mudyepsilon(int i, int j) {
 	);
 }
 
+//dérivées de epsilon (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_epsilon(int i, int j) {
 	if (is_in(i+1,j) && is_in(i-1,j)) {
 		return(
@@ -659,6 +684,8 @@ data_t Diff_Eq_Solver::deriv_y_epsilon(int i, int j) {
 	}
 }
 
+//petite fonction pour savoir si on est dans le tableau ou si on sort.
+//si on sort, tous les gradients sont nuls.
 bool Diff_Eq_Solver::is_in(int i, int j) {
 	if (i>=0 && i<this->arglist_pt->x_size && j>=0 && j<this->arglist_pt->y_size) {
 		return(true);
@@ -668,10 +695,13 @@ bool Diff_Eq_Solver::is_in(int i, int j) {
 	}
 }
 
-void Diff_Eq_Solver::update_vol_mass(int i, int j) { //mise à jour de la masse volumique
+//les update de la masse volumique
+//en cartésiennes
+void Diff_Eq_Solver::update_vol_mass(int i, int j) {
         mesh_grid_2[i][j].vol_mass = mesh_grid_1[i][j].vol_mass - diver_rhov_c(i,j)*this->arglist_pt->time_step;
 }
 
+//en cylindriques
 void Diff_Eq_Solver::update_vol_mass_cyl(int i, int j) {
         mesh_grid_2[i][j].vol_mass = mesh_grid_1[i][j].vol_mass-this->arglist_pt->time_step*(1.0/r(i)*deriv_r_rrhovr(i,j)+deriv_y_rhovy(i,j));
 }
@@ -737,7 +767,6 @@ void Diff_Eq_Solver::update_epsilon_PG_turb(int i, int j) {
 }
 
 void Diff_Eq_Solver::copy_case(int i, int j, int k, int l) {
-        
         mesh_grid_2[i][j].vol_mass = mesh_grid_2[k][l].vol_mass;
         mesh_grid_2[i][j].temperature = mesh_grid_2[k][l].temperature;
         mesh_grid_2[i][j].pressure = mesh_grid_2[k][l].pressure;
@@ -745,7 +774,12 @@ void Diff_Eq_Solver::copy_case(int i, int j, int k, int l) {
         mesh_grid_2[i][j].speed[1] = mesh_grid_2[k][l].speed[1];
 }
 
-
+data_t Diff_Eq_Solver::save_thrust() {
+	thrusty=0;
+   	for (int k = 0; k<this->arglist_pt->x_size; k++) {
+      		thrusty+= -mesh_grid_1[k][0].speed[1]*pow(this->arglist_pt->space_step,2);
+   	}
+}
 
 
 // Une iteration totale
@@ -759,86 +793,63 @@ void Diff_Eq_Solver::exchange_mesh_grid_pts()
 
 
 void Diff_Eq_Solver::calc_iteration_PG_cart() {
-        
-  register int i,j;
-  for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
-    for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
-	if (not(mesh_grid_1[i][j].is_wall)) {
-      
-        this->update_vol_mass(i,j);
-        
-        this->update_speed_x(i,j);
-        
-        this->update_speed_y(i,j);
-        
-        this->update_temp_PG(i,j);
-        
-        this->update_pres_PG(i,j);
-	}
-      }
-   }
-   for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
-           copy_case(i,0,i,1);
-   }
-   for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
+  	register int i,j;
+  	for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
+    		for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
+			if (not(mesh_grid_1[i][j].is_wall)) {
+        		this->update_vol_mass(i,j);
+        		this->update_speed_x(i,j);
+        		this->update_speed_y(i,j);
+        		this->update_temp_PG(i,j);
+        		this->update_pres_PG(i,j);
+			}
+      		}
+   	}
+   	for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
+        	copy_case(i,0,i,1);
+   	}
+   	for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
            copy_case(0,j,1,j);
            copy_case(this->arglist_pt->x_size-1,j,this->arglist_pt->x_size-2,j);
-   }
-   
-   this->exchange_mesh_grid_pts();
+   	}
+   	this->exchange_mesh_grid_pts();
 }
 
 void Diff_Eq_Solver::calc_iteration_PG_cart_turb() {
-        
-  register int i,j;
-  for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
-    for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
-        if (not(mesh_grid_1[i][j].is_wall)) {
-        this->update_vol_mass(i,j);
-        
-	this->update_speed_x_turb(i,j);
-        
-        this->update_speed_y_turb(i,j);
-        
-        this->update_temp_PG_turb(i,j);
-        
-        this->update_pres_PG(i,j);
-        
-        this->update_k_PG_turb(i,j);
-        
-        this->update_epsilon_PG_turb(i,j);
-        }
-      }
-   }
-   for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
-           copy_case(i,0,i,1);
-   }
-   for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
-           copy_case(0,j,1,j);
-           copy_case(this->arglist_pt->x_size-1,j,this->arglist_pt->x_size-2,j);
-   }
-   
-   this->exchange_mesh_grid_pts();
-	
+	register int i,j;
+  	for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
+    		for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
+        		if (not(mesh_grid_1[i][j].is_wall)) {
+        		this->update_vol_mass(i,j);
+        		this->update_speed_x_turb(i,j);
+        		this->update_speed_y_turb(i,j);
+		        this->update_temp_PG_turb(i,j);
+		        this->update_pres_PG(i,j);
+		        this->update_k_PG_turb(i,j);
+		        this->update_epsilon_PG_turb(i,j);
+        		}
+      		}
+   	}
+   	for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
+           	copy_case(i,0,i,1);
+   	}
+   	for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
+           	copy_case(0,j,1,j);
+           	copy_case(this->arglist_pt->x_size-1,j,this->arglist_pt->x_size-2,j);
+   	}
+   	this->exchange_mesh_grid_pts();
 }
 
 void Diff_Eq_Solver::calc_iteration_PG_cyl() {
-        
         register int i,j;
         for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
                 for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
       			if (not(mesh_grid_1[i][j].is_wall)) {
-      			
                         this->update_vol_mass_cyl(i,j);
-        
                         this->update_speed_r_cyl(i,j);
-        
                         this->update_speed_z_cyl(i,j);
-        
                         this->update_temp_PG_cyl(i,j);
-        
                         this->update_pres_PG(i,j);
-                        
       			}
                 }
         }
@@ -849,7 +860,6 @@ void Diff_Eq_Solver::calc_iteration_PG_cyl() {
                 copy_case(0,j,1,j);
                 copy_case(this->arglist_pt->x_size-1,j,this->arglist_pt->x_size-2,j);
         }
-
         this->exchange_mesh_grid_pts();
 }
 
@@ -859,13 +869,9 @@ void Diff_Eq_Solver::calc_iteration_VDW_cart() {
                 for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
       			if (not(mesh_grid_1[i][j].is_wall)) {
                         this->update_vol_mass(i,j);
-        
                         this->update_speed_x(i,j);
-        
                         this->update_speed_y(i,j);
-        
                         this->update_temp_VDW(i,j);
-        
                         this->update_pres_VDW(i,j);
       			}
                 }
@@ -877,25 +883,18 @@ void Diff_Eq_Solver::calc_iteration_VDW_cart() {
                 copy_case(0,j,1,j);
                 copy_case(this->arglist_pt->x_size-1,j,this->arglist_pt->x_size-2,j);
         }
-   
         this->exchange_mesh_grid_pts();
 }
 
 void Diff_Eq_Solver::calc_iteration_VDW_cyl() {
-        
         register int i,j;
         for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
                 for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
       			if (not(mesh_grid_1[i][j].is_wall)) {
-      			
                         this->update_vol_mass_cyl(i,j);
-
                         this->update_speed_r_cyl(i,j);
-        
                         this->update_speed_z_cyl(i,j);
-        
                         this->update_temp_VDW_cyl(i,j);
-        
                         this->update_pres_VDW(i,j);
       			}
                 }
@@ -907,58 +906,53 @@ void Diff_Eq_Solver::calc_iteration_VDW_cyl() {
                 copy_case(0,j,1,j);
                 copy_case(this->arglist_pt->x_size-1,j,this->arglist_pt->x_size-2,j);
         }
-
         this->exchange_mesh_grid_pts();
 }
 
 
-void Diff_Eq_Solver::solve_PG_cart()
-{
-	data_t thrusty = 0.;
+void Diff_Eq_Solver::solve_PG_cart() {
         register int i;
         for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
         	this->calc_iteration_PG_cart();
-        	
-        	thrusty=0;
-   		for (int k = 0; k<this->arglist_pt->x_size; k++) {
-      			thrusty+= -mesh_grid_1[k][0].speed[1]*pow(this->arglist_pt->space_step,2);
-   		}
-   		this->thrust[i] = thrusty;
+   		this->thrust[i] = save_thrust();
         }
         this->DM->thrust_plotter(&(this->thrust));
 }
 
 void Diff_Eq_Solver::solve_PG_cart_turb() {
-	data_t thrusty = 0.;
         register int i;
         for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
         	this->calc_iteration_PG_cart_turb();
-        	
-        	thrusty=0;
-   		for (int k = 0; k<this->arglist_pt->x_size; k++) {
-      			thrusty+= -mesh_grid_1[k][0].speed[1]*pow(this->arglist_pt->space_step,2);
-   		}
-   		this->thrust[i] = thrusty;
+        	this->thrust[i] = save_thrust();
         }
         this->DM->thrust_plotter(&(this->thrust));
 }
 
-void Diff_Eq_Solver::solve_VDW_cart()
-{
+void Diff_Eq_Solver::solve_VDW_cart() {
         register int i;
-        for (i=0; i<this->arglist_pt->iter_number_solver; i++) { this->calc_iteration_VDW_cart(); }
+        for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
+        	this->calc_iteration_VDW_cart();
+        	this->thrust[i] = save_thrust();
+        }
+        this->DM->thrust_plotter(&(this->thrust));
 }
 
-void Diff_Eq_Solver::solve_PG_cyl()
-{
+void Diff_Eq_Solver::solve_PG_cyl() {
         register int i;
-        for (i=0; i<this->arglist_pt->iter_number_solver; i++) { this->calc_iteration_PG_cyl(); }
+        for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
+        	this->calc_iteration_PG_cyl();
+        	this->thrust[i] = save_thrust();
+        }
+        this->DM->thrust_plotter(&(this->thrust));
 }
 
-void Diff_Eq_Solver::solve_VDW_cyl()
-{
+void Diff_Eq_Solver::solve_VDW_cyl() {
         register int i;
-        for (i=0; i<this->arglist_pt->iter_number_solver; i++) { this->calc_iteration_VDW_cyl(); }
+        for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
+        	this->calc_iteration_VDW_cyl();
+        	this->thrust[i] = save_thrust();
+        }
+        this->DM->thrust_plotter(&(this->thrust));
 }
 
 
@@ -988,6 +982,5 @@ void Diff_Eq_Solver::solve()
 
                 default:
                         throw "DES : Bad solving algorithm";
-
         }
 }
