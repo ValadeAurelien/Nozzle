@@ -49,6 +49,9 @@ struct init_conditions_struct {
 
         float chamber_speed;
         float atmosphere_speed;
+        
+        float chamber_turb_en;
+        float chamber_turb_dis;
 };
 
 struct brutal_force_init_arg_struct {
