@@ -327,11 +327,11 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
         catch (...) {throw "AI: Invalid b coefficient of Van Der Waals";}
         
         READ
-        try {this->arglist.init_chamber_turb_en = stof(arg_val);}
+        try {this->arglist.init_cond.init_chamber_turb_en = stof(arg_val);}
         catch (...) {throw "AI: Invalid value of initial chamber turbulence energy";}
         
         READ
-        try {this->arglist.init_chamber_turb_dis = stof(arg_val);}
+        try {this->arglist.init_cond.init_chamber_turb_dis = stof(arg_val);}
         catch (...) {throw "AI: Invalid value of initial chamber turbulence dissipation";}
         
         READ
