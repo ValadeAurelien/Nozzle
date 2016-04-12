@@ -27,6 +27,7 @@
 
 // ======== implementation ========
 
+//le contruscteur : on crée un vecteur thrust qui va contenir la liste des valeurs de la poussée au cours du temps
 Diff_Eq_Solver::Diff_Eq_Solver(Usr_Interface *UI,Data_Mapper *DM, arglist_struct *arglist_pt, mesh_grid_t *mesh_grid_pt1, mesh_grid_t *mesh_grid_pt2) {
         this->UI = UI;
         this->DM = DM;
