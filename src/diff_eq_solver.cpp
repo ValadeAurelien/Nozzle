@@ -255,20 +255,6 @@ data_t Diff_Eq_Solver::deriv_y_vy(int i, int j) {
 	);
 }
 
-//le "stress" moléculaire : c'est la contrainte moléculaire classique (loi de Stokes)
-//attention que la contrainte est symétrique, mol_stress_yx=mol_stress_xy
-data_t Diff_Eq_Solver::mol_stress_xy(int i, int j) {
-	return(2.0*this->arglist_pt->dyn_visc*strain_xy(i,j));
-}
-
-data_t Diff_Eq_Solver::mol_stress_xx(int i, int j) {
-	return(2.0*this->arglist_pt->dyn_visc*(2.0/3.0*strain_xx(i,j)-1.0/3.0*strain_yy(i,j)));
-}
-
-data_t Diff_Eq_Solver::mol_stress_yy(int i, int j) {
-	return(2.0*this->arglist_pt->dyn_visc*(2.0/3.0*strain_yy(i,j)-1.0/3.0*strain_xx(i,j)));
-}
-
 //le "strain" : c'est le déplacement utilisé dans le calcul de la contrainte (ici en cartésiennes)
 //attention que le déplacement est symétrique, strain_xy=strain_yx
 data_t Diff_Eq_Solver::strain_xy(int i, int j) {
@@ -533,30 +519,47 @@ data_t Diff_Eq_Solver::tot_stress_yy(int i, int j) {
 	return(mol_stress_yy(i,j)+turb_stress_yy(i,j));
 }
 
-data_t Diff_Eq_Solver::turb_stress_yy(int i, int j) {
-	return(2.0*mu_t(i,j)*(2.0/3.0*strain_yy(i,j)-1.0/3.0*strain_xx(i,j))-2.0/3.0*mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_en);
-}
-
 data_t Diff_Eq_Solver::tot_stress_xx(int i, int j) {
 	return(mol_stress_xx(i,j)+turb_stress_xx(i,j));
-}
-
-data_t Diff_Eq_Solver::turb_stress_xx(int i, int j) {
-	return(2.0*mu_t(i,j)*(2.0/3.0*strain_xx(i,j)-1.0/3.0*strain_yy(i,j))-2.0/3.0*mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_en);
 }
 
 data_t Diff_Eq_Solver::tot_stress_xy(int i, int j) {
 	return(mol_stress_xy(i,j)+turb_stress_xy(i,j));
 }
 
+//définition de la contrainte turbulente (analogie loi de Stokes)
+data_t Diff_Eq_Solver::turb_stress_yy(int i, int j) {
+	return(2.0*mu_t(i,j)*(2.0/3.0*strain_yy(i,j)-1.0/3.0*strain_xx(i,j))-2.0/3.0*mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_en);
+}
+
+data_t Diff_Eq_Solver::turb_stress_xx(int i, int j) {
+	return(2.0*mu_t(i,j)*(2.0/3.0*strain_xx(i,j)-1.0/3.0*strain_yy(i,j))-2.0/3.0*mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_en);
+}
+
 data_t Diff_Eq_Solver::turb_stress_xy(int i, int j) {
 	return(2.0*mu_t(i,j)*strain_xy(i,j));
 }
 
+//le "stress" moléculaire : c'est la contrainte moléculaire classique (loi de Stokes)
+//attention que la contrainte est symétrique, mol_stress_yx=mol_stress_xy
+data_t Diff_Eq_Solver::mol_stress_xy(int i, int j) {
+	return(2.0*this->arglist_pt->dyn_visc*strain_xy(i,j));
+}
+
+data_t Diff_Eq_Solver::mol_stress_xx(int i, int j) {
+	return(2.0*this->arglist_pt->dyn_visc*(2.0/3.0*strain_xx(i,j)-1.0/3.0*strain_yy(i,j)));
+}
+
+data_t Diff_Eq_Solver::mol_stress_yy(int i, int j) {
+	return(2.0*this->arglist_pt->dyn_visc*(2.0/3.0*strain_yy(i,j)-1.0/3.0*strain_xx(i,j)));
+}
+
+//divergence de rho*v*k (modèle k-epsilon) (cartésiennes)
 data_t Diff_Eq_Solver::diver_rhovk(int i, int j) {
 	return(deriv_x_rhovxk(i,j)+deriv_y_rhovyk(i,j));
 }
 
+//dérivées de rho*v_x,y*k (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_rhovxk(int i, int j) {
 	return(
 	(mesh_grid_1[i+1][j].turb_en*mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0]-mesh_grid_1[i-1][j].turb_en*mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0])
@@ -571,10 +574,12 @@ data_t Diff_Eq_Solver::deriv_y_rhovyk(int i, int j) {
 	);
 }
 
+//divergence de mu_tot*grad(k) (cartésiennes)
 data_t Diff_Eq_Solver::diver_mudk(int i, int j) {
 	return(deriv_x_mudxk(i,j)+deriv_y_mudyk(i,j));
 }
 
+//dérivées de mu_tot*grad(k) (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_mudxk(int i, int j) {
 	return(
 	( (mu_t(i+1,j)/sig_k+this->arglist_pt->dyn_visc)*deriv_x_k(i+1,j) - (mu_t(i-1,j)/sig_k+this->arglist_pt->dyn_visc)*deriv_x_k(i-1,j))
@@ -589,6 +594,7 @@ data_t Diff_Eq_Solver::deriv_y_mudyk(int i, int j) {
 	);
 }
 
+//dérivées de k (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_k(int i, int j) {
 	if (is_in(i+1,j) && is_in(i-1,j)) {
 		return(
@@ -613,10 +619,12 @@ data_t Diff_Eq_Solver::deriv_y_k(int i, int j) {
 	}
 }
 
+//divergence de rho*v*epsilon (modèle k-epsilon) (cartésiennes)
 data_t Diff_Eq_Solver::diver_rhovepsilon(int i, int j) {
 	return(deriv_x_rhovxepsilon(i,j)+deriv_y_rhovyepsilon(i,j));
 }
 
+//dérivées de rho*v*epsilon (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_rhovxepsilon(int i, int j) {
 	return(
 	(mesh_grid_1[i+1][j].turb_dis*mesh_grid_1[i+1][j].vol_mass*mesh_grid_1[i+1][j].speed[0]-mesh_grid_1[i-1][j].turb_dis*mesh_grid_1[i-1][j].vol_mass*mesh_grid_1[i-1][j].speed[0])
@@ -631,10 +639,12 @@ data_t Diff_Eq_Solver::deriv_y_rhovyepsilon(int i, int j) {
 	);
 }
 
+//divergence de mu_tot*grad(epsilon) (cartésiennes)
 data_t Diff_Eq_Solver::diver_mudepsilon(int i, int j) {
 	return(deriv_x_mudxepsilon(i,j)+deriv_y_mudyepsilon(i,j));
 }
 
+//dérivées de mu_tot*grad(epsilon) (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_mudxepsilon(int i, int j) {
 	return(
 	((mu_t(i+1,j)/sig_e+this->arglist_pt->dyn_visc)*deriv_x_epsilon(i+1,j) - (mu_t(i-1,j)/sig_e+this->arglist_pt->dyn_visc)*deriv_x_epsilon(i-1,j))
@@ -649,6 +659,7 @@ data_t Diff_Eq_Solver::deriv_y_mudyepsilon(int i, int j) {
 	);
 }
 
+//dérivées de epsilon (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_epsilon(int i, int j) {
 	if (is_in(i+1,j) && is_in(i-1,j)) {
 		return(
@@ -673,6 +684,8 @@ data_t Diff_Eq_Solver::deriv_y_epsilon(int i, int j) {
 	}
 }
 
+//petite fonction pour savoir si on est dans le tableau ou si on sort.
+//si on sort, tous les gradients sont nuls.
 bool Diff_Eq_Solver::is_in(int i, int j) {
 	if (i>=0 && i<this->arglist_pt->x_size && j>=0 && j<this->arglist_pt->y_size) {
 		return(true);
@@ -682,10 +695,13 @@ bool Diff_Eq_Solver::is_in(int i, int j) {
 	}
 }
 
-void Diff_Eq_Solver::update_vol_mass(int i, int j) { //mise à jour de la masse volumique
+//les update de la masse volumique
+//en cartésiennes
+void Diff_Eq_Solver::update_vol_mass(int i, int j) {
         mesh_grid_2[i][j].vol_mass = mesh_grid_1[i][j].vol_mass - diver_rhov_c(i,j)*this->arglist_pt->time_step;
 }
 
+//en cylindriques
 void Diff_Eq_Solver::update_vol_mass_cyl(int i, int j) {
         mesh_grid_2[i][j].vol_mass = mesh_grid_1[i][j].vol_mass-this->arglist_pt->time_step*(1.0/r(i)*deriv_r_rrhovr(i,j)+deriv_y_rhovy(i,j));
 }
