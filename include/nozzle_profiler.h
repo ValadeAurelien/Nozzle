@@ -62,6 +62,7 @@ class Nozzle_Profiler
                 void set_init_conditions();
                 void save_mesh_grid();
 
+                void set_wall(int i,int j);
                 bool is_in_x_range(int i);
                 
                 // fonctions brutal force

@@ -140,6 +140,14 @@ void Nozzle_Profiler::save_mesh_grid()
         this->DM->create_datafile_from_mesh_grid(&(this->mesh_grid_1));
 }
 
+void Nozzle_Profiler::set_wall(int i,int j)
+{
+    if (i > 0 and j < this->arglist_pt->y_size){ this->mesh_grid_1[i][j].is_wall = true; this->mesh_grid_2[i][j].is_wall = true;}
+    if (i-1 > 0 and j < this->arglist_pt->y_size){ this->mesh_grid_1[i-1][j].is_wall = true; this->mesh_grid_2[i-1][j].is_wall = true;}
+    if (i > 0 and j+1 < this->arglist_pt->y_size){ this->mesh_grid_1[i][j+1].is_wall = true; this->mesh_grid_2[i][j+1].is_wall = true;}
+    if (i-1 > 0 and j+1 < this->arglist_pt->y_size){ this->mesh_grid_1[i-1][j+1].is_wall = true; this->mesh_grid_2[i-1][j+1].is_wall = true;}
+
+}
 
 bool Nozzle_Profiler::is_in_x_range(int i)
 {
@@ -269,19 +277,16 @@ void Nozzle_Profiler::init_profile_segment()
                                           this->arglist_pt->nozzle_fitting_init_arg.segment.ordinates[a],
                                           this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[a+1],
                                           this->arglist_pt->nozzle_fitting_init_arg.segment.ordinates[a+1],j);
-                        this->mesh_grid_1[i_new][j].is_wall = true;
-                        this->mesh_grid_2[i_new][j].is_wall = true;
+                        this->set_wall(i_new, j);
                         
                         if (i_new > i_mem){
                                 for (i=i_new; i>i_mem; i--){
-                                        this->mesh_grid_1[i][j-1].is_wall = true;
-                                        this->mesh_grid_2[i][j-1].is_wall = true;
+                                        this->set_wall(i,j-1);
                                 }
                         }
                         if (i_new < i_mem){
                                 for (i=i_new; i<i_mem; i++){
-                                        this->mesh_grid_1[i][j-1].is_wall = true;
-                                        this->mesh_grid_2[i][j-1].is_wall = true;
+                                        this->set_wall(i,j-1);
                                 }
                         }
 
@@ -297,14 +302,12 @@ void Nozzle_Profiler::init_profile_segment()
 
         if (i_new > i_mem){
                 for (i=i_new; i>i_mem; i--){
-                        this->mesh_grid_1[i][j-1].is_wall = true;
-                        this->mesh_grid_2[i][j-1].is_wall = true;
+                        this->set_wall(i,j-1);
                 }
         }
         if (i_new < i_mem){
                 for (i=i_new; i<i_mem; i++){
-                        this->mesh_grid_1[i][j-1].is_wall = true;
-                        this->mesh_grid_2[i][j-1].is_wall = true;
+                        this->set_wall(i,j-1);
                 }
         }
 

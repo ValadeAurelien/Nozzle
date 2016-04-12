@@ -26,6 +26,8 @@ int main(int argc, char *argv[])
        UI->cout_str("Loading Arguments Interpreter...");
        Arg_Interpreter *AI = new Arg_Interpreter(UI);
        
+       string argfile_name = ""; //moche mais nécessaire pour le DM
+       
        // gestion des arguments
               
        // cas de l'absence d'argument
@@ -45,7 +47,7 @@ int main(int argc, char *argv[])
                if (strcmp(argv[i],"--new-config") == 0){
                        if (i+1 < argc){
                                try{
-                                       string argfile_name = argv[i+1];
+                                       argfile_name = argv[i+1];
                                        AI->create_argfile_from_cons( argfile_name );
                                        UI->cout_str("Configuration file created -- Now exiting with no error");
                                        return 1;
@@ -65,7 +67,7 @@ int main(int argc, char *argv[])
                if (strcmp(argv[i],"--run-config") == 0){
                        if (i+1 < argc){
                                try{
-                                       string argfile_name = argv[i+1];
+                                       argfile_name = argv[i+1];
                                        AI->fill_arglist_from_argfile( argfile_name );
                                        break;
                                }
@@ -88,7 +90,7 @@ int main(int argc, char *argv[])
        }
        
        UI->cout_str("Loading Data Mapper...");
-       Data_Mapper *DM = new Data_Mapper(UI, AI->get_arglist_pt());
+       Data_Mapper *DM = new Data_Mapper(UI, AI->get_arglist_pt(), argfile_name);
 
        UI->cout_str("Loading Nozzle Profiler...");
        Nozzle_Profiler *NP = new Nozzle_Profiler(UI, DM, AI->get_arglist_pt());

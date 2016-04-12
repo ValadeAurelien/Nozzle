@@ -32,7 +32,8 @@ typedef double data_t;
 class Data_Mapper
 {
         public:
-                Data_Mapper(Usr_Interface *UI, arglist_struct *arglist_pt);
+                Data_Mapper(Usr_Interface *UI, arglist_struct *arglist_pt, string argfile_name);
+                void create_directory();
                 void create_datafile_from_mesh_grid(mesh_grid_t *mesh_grid_pt);
                 void show_datafile();
                 void thrust_plotter(vector<data_t> *thrust_pt);
@@ -40,6 +41,8 @@ class Data_Mapper
                 const string PATH = "./datafiles/";
                 Usr_Interface *UI;
                 arglist_struct *arglist_pt;
+                string argfile_name;
+                string data_dir;
 };
 
 

@@ -15,29 +15,42 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <stdlib.h>
 
 #define WIDTH 18
 #define PRECISION 7
 
 // ======== implementation ========
 
-Data_Mapper::Data_Mapper(Usr_Interface *UI, arglist_struct *arglist_pt)
+Data_Mapper::Data_Mapper(Usr_Interface *UI, arglist_struct *arglist_pt, string argfile_name)
 {
         this->UI = UI;
         this->arglist_pt = arglist_pt;
+        this->argfile_name = argfile_name;
+        string::size_type pos = argfile_name.find(".arg");
+        string sub_data_dir = argfile_name.substr(0, pos);
+
+        this->data_dir = this->PATH + sub_data_dir;
+
 }
+
+void Data_Mapper::create_directory()
+{
+        this->UI->cout_str("DM-> saving mesh grid datas in " + this->data_dir);
+        system( ("mkdir 2>/dev/null " + this->data_dir).c_str() );      
+}
+
 
 void Data_Mapper::create_datafile_from_mesh_grid(mesh_grid_t *mesh_grid_pt)
 {
-        string datafile_path = this->PATH + this->arglist_pt->datafile_name;
-        this->UI->cout_str("DM-> saving mesh grid datas in " + datafile_path);
-        
         mesh_grid_t &mesh_grid = *mesh_grid_pt;
 
+        this->create_directory();
+
         ofstream file;
-        file.open(datafile_path, ios::out);
-        bool b = true;
-        file << "# Result of the experimentation with args: " << b<< endl;
+        file.open(this->data_dir + "/final_prof_meshgrid.data", ios::out);
+
+        file << "# Result of the experimentation: " << this->argfile_name << endl << endl;
         file << "#" << setw(WIDTH) << "x" << setw(WIDTH) << "y"
                 << setw(WIDTH) << "is_wall" << setw(WIDTH) << "pressure"
                 << setw(WIDTH) << "temper" << setw(WIDTH) << "vol_mass"
@@ -66,12 +79,15 @@ void Data_Mapper::create_datafile_from_mesh_grid(mesh_grid_t *mesh_grid_pt)
 }
 
 void Data_Mapper::thrust_plotter(vector<data_t> *thrust_pt) {
+        
+        this->create_directory();
+        
         ofstream file;
-        file.open("./thrust.data", ios::out);
-        double current_time;
+        file.open(this->data_dir + "/final_prof_thrust.data", ios::out);
         for (int k=0; k<thrust_pt->size();k++) {
-                current_time = k*this->arglist_pt->time_step;
-                file << setw(WIDTH) << k*this->arglist_pt->time_step << setw(WIDTH) << setprecision(PRECISION) << (*(thrust_pt))[k] << endl;
+                file << setw(WIDTH) << k*this->arglist_pt->time_step 
+                    << setw(WIDTH) << setprecision(PRECISION) << (*(thrust_pt))[k] 
+                    << endl;
         }
         file.close();
 }
