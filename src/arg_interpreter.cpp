@@ -136,6 +136,17 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
                 file << "VDW_a_coeff = 0" << endl;
                 file << "VDW_b_coeff = 0" << endl;
         }
+        if ( answer == "4") {
+                (this->UI)->cout_str("Enter the value of k in the chamber (float)");
+                file << "init_chamber_turb_en = " << (this->UI)->cin_str() << endl;
+                
+                (this->UI)->cout_str("Enter the value of epsilon in the chamber (float)");
+                file << "init_chamber_turb_dis = " << (this->UI)->cin_str() << endl;
+        }
+        else {
+                file << "init_chamber_turb_en = 0" << endl;
+                file << "init_chamber_turb_dis = 0" << endl;
+        }
 
         (this->UI)->cout_str("Activate thermal conduction ? (bool: true/false)");
         answer = (this->UI)->cin_str();
@@ -314,7 +325,15 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
         READ
         try {this->arglist.VDW_b_coef = stof(arg_val);}
         catch (...) {throw "AI: Invalid b coefficient of Van Der Waals";}
-
+        
+        READ
+        try {this->arglist.init_chamber_turb_en = stof(arg_val);}
+        catch (...) {throw "AI: Invalid value of initial chamber turbulence energy";}
+        
+        READ
+        try {this->arglist.init_chamber_turb_dis = stof(arg_val);}
+        catch (...) {throw "AI: Invalid value of initial chamber turbulence dissipation";}
+        
         READ
         if (arg_val == "false")  {this->arglist.thermal_conduction = false;}
         else {
