@@ -3,4 +3,7 @@
 \lib
 \bin
 \share
-\sync_datafiles
+\get_datafiles
+
+\datafiles
+\argfiles

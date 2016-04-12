@@ -775,10 +775,11 @@ void Diff_Eq_Solver::copy_case(int i, int j, int k, int l) {
 }
 
 data_t Diff_Eq_Solver::save_thrust() {
-	thrusty=0;
+  	data_t thrusty=0;
    	for (int k = 0; k<this->arglist_pt->x_size; k++) {
       		thrusty+= -mesh_grid_1[k][0].speed[1]*pow(this->arglist_pt->space_step,2);
    	}
+    return(thrusty);
 }
 
 
