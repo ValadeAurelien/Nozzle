@@ -16,6 +16,7 @@ using namespace std;
 // ======= includes ========
 
 #include <vector>
+#include <thread>
 
 // ========= obj dependencies ========
 
@@ -75,6 +76,8 @@ class Diff_Eq_Solver
                 data_t speed2(int i, int j, int k);//la norme au carré de la vitesse
                 data_t r(int i);//définit la coordonnée radiale r en fonction de i l'ordonnée dans le tableau
                 data_t pres_tot_PG(int i, int j);//en fait c'est rho*e+P
+                data_t r(int i);//définit la coordonnée radiale r en fonction de i l'ordonnée dans le tableau
+                data_t pres_tot_PG(int i, int j);//en fait c'est rho*e+P
                 data_t en_tot_PG(int i, int j);//en fait c'est e l'énergie massique
                 data_t pres_tot_VDW(int i, int j);//en fait c'est encore rho*e+P
                 data_t en_tot_VDW(int i, int j);//en fait c'est l'énergie massique
@@ -132,8 +135,6 @@ class Diff_Eq_Solver
                 data_t deriv_y_tauyy(int i, int j);
                 data_t deriv_y_tauyy_turb(int i, int j);
                 data_t deriv_y_tauxy(int i, int j);
-                data_t deriv_y_tauxy_turb(int i, int j);
-                data_t diver_vtau(int i, int j);
                 data_t diver_vtau_turb(int i, int j);
                 data_t deriv_x_vtaux(int i, int j);
                 data_t deriv_x_vtaux_turb(int i, int j);
@@ -168,6 +169,7 @@ class Diff_Eq_Solver
                 mesh_grid_t *mesh_grid_pt1; //pointeur vers le tableau tuyère
                 mesh_grid_t *mesh_grid_pt2;
                 vector<data_t> thrust;
+                vector<thread> threads;
 };
 
 

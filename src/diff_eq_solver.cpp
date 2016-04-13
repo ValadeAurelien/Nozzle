@@ -13,6 +13,7 @@
 #include "data_mapper.h"
 #include <cmath>
 #include <vector>
+#include <thread>
 
 #define R 8.314 //constante des gaz parfaits
 //toutes les constantes relatives au modèle k-epsilon
@@ -37,6 +38,7 @@ Diff_Eq_Solver::Diff_Eq_Solver(Usr_Interface *UI,Data_Mapper *DM, arglist_struct
         this->mesh_grid_pt2 = mesh_grid_pt2;
         vector<data_t> thrust(this->arglist_pt->iter_number_solver);
         this->thrust = thrust;
+        this->threads.resize(this->arglist_pt->nb_of_threads);
 }
 
 //fonction qui calcule le carré de la vitesse, le troisième argument vaut 1:mesh_grid_1 2:mesh_grid_2
@@ -907,22 +909,46 @@ void Diff_Eq_Solver::calc_iteration_PG_cart() {
 }
 
 //calcule une itération temporelle des équations différentielles (gaz parfait, cartésiennes, turbulentes)
+
+void Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb(int i_min, int i_max)
+{
+    register i,j;
+    for (i = i_min ; i < i_max; i++) {
+        for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
+            if (not(mesh_grid_1[i][j].is_wall)) {
+                this->update_vol_mass(i,j);
+                this->update_speed_x_turb(i,j);
+                this->update_speed_y_turb(i,j);
+                this->update_temp_PG_turb(i,j);
+                this->update_pres_PG(i,j);
+                this->update_k_PG_turb(i,j);
+                this->update_epsilon_PG_turb(i,j);
+            }
+        }
+    }
+}
+
 void Diff_Eq_Solver::calc_iteration_PG_cart_turb() {
-	register int i,j;
-  	for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
-    		for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
-        		if (not(mesh_grid_1[i][j].is_wall)) {
-        		this->update_vol_mass(i,j);
-        		this->update_speed_x_turb(i,j);
-        		this->update_speed_y_turb(i,j);
-		        this->update_temp_PG_turb(i,j);
-		        this->update_pres_PG(i,j);
-		        this->update_k_PG_turb(i,j);
-		        this->update_epsilon_PG_turb(i,j);
-        		}
-      		}
-   	}
-   	for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
+    
+    // on découpe la matrice en bandes horizontales -> chaque calcul part sur un coeur
+    register int t, i_min, i_max, slice;
+    i_min = 1;
+    slice = this->arglist_pt->x_size / this->arglist_pt->nb_of_threads; // taille d'une tranche horizontale
+    i_max = i_min + slice;
+
+    for (t = 0 ; t < this->arglist_pt->nb_of_threads - 1; t++){ 
+        this->threads[t] = thread ( [=] {partial_calc_iteration_PG_cart_turb(i_min, i_max); }); // on envoie sur les coeurs
+        i_min += i_max;
+        i_max += slice;
+    }
+
+    this->threads[t] = thread ( [=] {partial_calc_iteration_PG_cart_turb(i_min, this->arglist_pt->x_size); }); // le dernier se tape le rab de la division euclidienne
+
+    for (t = 0; t < this->arglist_pt->nb_of_threads; t++) this->threads[t].join(); //on attend que tout le monde ait fini
+
+
+    
+    for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
            	copy_case(i,0,i,1);
    	}
    	for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {

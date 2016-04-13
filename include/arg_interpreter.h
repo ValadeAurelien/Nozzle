@@ -48,7 +48,10 @@ struct init_conditions_struct {
         float atmosphere_speed;
         
         float chamber_turb_en;
+        float atmosphere_turb_en;
+
         float chamber_turb_dis;
+        float atmosphere_turb_dis;
 };
 
 struct brutal_force_init_arg_struct {
@@ -93,6 +96,7 @@ struct arglist_struct {
         unsigned int nozzle_length; //longueur de la tuyère
         unsigned int iter_number_solver; //le nombre d'itérations du solver d'eq_diff
         unsigned int iter_number_profiler; //le nombre d'itérations du profiler
+        unsigned int nb_of_threads; //nb de threads alloués au programme
 
         float time_step; //le pas de temps, qui sera utilisé par eq_diff
         float space_step; // pas d'espace

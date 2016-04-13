@@ -60,6 +60,9 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
         (this->UI)->cout_str("Enter the number of iterations for the profiler (int)");
         file << "iter_number_profiler = " << (this->UI)->cin_str() << endl;
 
+        (this->UI)->cout_str("Enter the number of threads allocated to the program (int)");
+        file << "nb_of_threads = " << (this->UI)->cin_str() << endl;
+
         //Paramètres de fiiting, choix algo et conditions initiales
 
         string answer;
@@ -164,10 +167,10 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
         file << "init_chamber_speed = " << (this->UI)->cin_str() << endl;
 
         if ( diff_eq_solver_algo == "4") {
-                (this->UI)->cout_str("Enter the value of k in the chamber (float)");
+                (this->UI)->cout_str("Enter the value of k (turbulence energy) in the chamber (float)");
                 file << "init_chamber_turb_en = " << (this->UI)->cin_str() << endl;
                 
-                (this->UI)->cout_str("Enter the value of epsilon in the chamber (float)");
+                (this->UI)->cout_str("Enter the value of epsilon (turbulence dissipation) in the chamber (float)");
                 file << "init_chamber_turb_dis = " << (this->UI)->cin_str() << endl;
         }
         else {
@@ -183,6 +186,18 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
 
         (this->UI)->cout_str("Enter the initial speed of the atmosphere (float)");
         file << "init_atmosphere_speed = " << (this->UI)->cin_str() << endl;
+
+        if ( diff_eq_solver_algo == "4") {
+                (this->UI)->cout_str("Enter the value of k (turbulence energy) in the atmosphere (float)");
+                file << "init_atmosphere_turb_en = " << (this->UI)->cin_str() << endl;
+                
+                (this->UI)->cout_str("Enter the value of epsilon (turbulence dissipation) in the atmosphere (float)");
+                file << "init_atmosphere_turb_dis = " << (this->UI)->cin_str() << endl;
+        }
+        else {
+                file << "init_atmosphere_turb_en = 0" << endl;
+                file << "init_atmosphere_turb_dis = 0" << endl;
+        }
 
         file.close();
 }
@@ -232,6 +247,10 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
         READ
         try {this->arglist.iter_number_profiler = stoi(arg_val);}
         catch (...) {throw "AI: Invalid number of iteration on nozzle profiler";}
+
+        READ
+        try {this->arglist.nb_of_threads = stoi(arg_val);}
+        catch (...) {throw "AI: Invalid number of threads";}
 
         // Paramètre de fitting, choix algo et arguments pour les conditions initiales
 
@@ -367,6 +386,14 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
         READ
         try {this->arglist.init_cond.atmosphere_speed = stof(arg_val);}
         catch (...) {throw "AI: Invalid initial atmosphere gaz speed";}
+
+        READ
+        try {this->arglist.init_cond.atmosphere_turb_en = stof(arg_val);}
+        catch (...) {throw "AI: Invalid value of initial atmosphere turbulence energy";}
+        
+        READ
+        try {this->arglist.init_cond.atmosphere_turb_dis = stof(arg_val);}
+        catch (...) {throw "AI: Invalid value of initial atmosphere turbulence dissipation";}
 
         this->UI->new_line();
 

@@ -73,14 +73,18 @@ void Nozzle_Profiler::set_init_conditions()
         float &atmo_press = this->arglist_pt->init_cond.atmosphere_pressure;
         float &atmo_temp = this->arglist_pt->init_cond.atmosphere_temp;
         float &atmo_speed = this->arglist_pt->init_cond.atmosphere_speed;
+        float &atmo_turb_en = this->arglist_pt->init_cond.atmosphere_turb_en;
+        float &atmo_turb_dis = this->arglist_pt->init_cond.atmosphere_turb_dis;
+        float atmo_v_mass = atmo_press * mol_mass / (R * atmo_temp);
+
         float &chbr_press = this->arglist_pt->init_cond.chamber_pressure;
         float &chbr_temp = this->arglist_pt->init_cond.chamber_temp;
         float &chbr_speed = this->arglist_pt->init_cond.chamber_speed;
         float &chbr_turb_en = this->arglist_pt->init_cond.chamber_turb_en;
         float &chbr_turb_dis = this->arglist_pt->init_cond.chamber_turb_dis;
+        
         int middle = this->arglist_pt->y_size - this->arglist_pt->chamber_length - this->arglist_pt->nozzle_length;
         
-        float atmo_v_mass = atmo_press * mol_mass / (R * atmo_temp);
         
         register int i,j;
 
@@ -90,7 +94,10 @@ void Nozzle_Profiler::set_init_conditions()
                         this->mesh_grid_1[i][j].temperature = atmo_temp;  
                         this->mesh_grid_1[i][j].vol_mass = atmo_v_mass; 
                         this->mesh_grid_1[i][j].speed[1] = atmo_speed;
+                        this->mesh_grid_1[i][j].turb_en = atmo_turb_en;
+                        this->mesh_grid_1[i][j].turb_dis = atmo_turb_dis;
                 }
+
         }
 
         for(j=middle; j<this->arglist_pt->y_size; j++){ 
@@ -100,6 +107,8 @@ void Nozzle_Profiler::set_init_conditions()
                         this->mesh_grid_1[i][j].temperature = atmo_temp;  
                         this->mesh_grid_1[i][j].vol_mass = atmo_v_mass ;
                         this->mesh_grid_1[i][j].speed[1] = atmo_speed ;
+                        this->mesh_grid_1[i][j].turb_en = atmo_turb_en;
+                        this->mesh_grid_1[i][j].turb_dis = atmo_turb_dis;
                 }
                 for(i=i; i<this->arglist_pt->x_size; i++) {
                         this->mesh_grid_1[i][j].pressure = (atmo_press * (this->arglist_pt->y_size -1 - j) 
@@ -113,9 +122,11 @@ void Nozzle_Profiler::set_init_conditions()
                         this->mesh_grid_1[i][j].speed[1] = (atmo_speed * (this->arglist_pt->y_size -1 - j) 
                                                             + chbr_speed * (j - middle)) / (this->arglist_pt->y_size - 1 - middle);
                                                             
-                        this->mesh_grid_1[i][j].turb_en = chbr_turb_en * (j - middle) / (this->arglist_pt->y_size - 1 - middle);
+                        this->mesh_grid_1[i][j].turb_en = (atmo_turb_en * (this->arglist_pt->y_size -1 - j)
+                                                           + chbr_turb_en * (j - middle)) / (this->arglist_pt->y_size - 1 - middle);
                         
-                        this->mesh_grid_1[i][j].turb_dis = chbr_turb_dis * (j - middle) / (this->arglist_pt->y_size - 1 - middle);
+                        this->mesh_grid_1[i][j].turb_dis = (atmo_turb_dis * (this->arglist_pt->y_size -1 - j)
+                                                           + chbr_turb_dis * (j - middle)) / (this->arglist_pt->y_size - 1 - middle);
                 }
         }
         
