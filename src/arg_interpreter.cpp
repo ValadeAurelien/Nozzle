@@ -60,9 +60,6 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
         (this->UI)->cout_str("Enter the number of iterations for the profiler (int)");
         file << "iter_number_profiler = " << (this->UI)->cin_str() << endl;
 
-        (this->UI)->cout_str("Enter the name of the datafile that will be created (string)");
-        file << "datafile_name = " << (this->UI)->cin_str() << endl;
-
         //Paramètres de fiiting, choix algo et conditions initiales
 
         string answer;
@@ -241,11 +238,6 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
         READ
         try {this->arglist.iter_number_profiler = stoi(arg_val);}
         catch (...) {throw "AI: Invalid number of iteration on nozzle profiler";}
-
-        READ
-        try {this->arglist.datafile_name = arg_val;}
-        catch (...) {throw "AI: Invalid datafile name";}
-
 
         // Paramètre de fitting, choix algo et arguments pour les conditions initiales
 

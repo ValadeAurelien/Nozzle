@@ -90,33 +90,31 @@ union nozzle_fitting_init_arg_union {
 };
 
 struct arglist_struct {
-	unsigned int x_size; //le nombre de cases suivant x
-	unsigned int y_size; //le nombre de cases suivant y
+        unsigned int x_size; //le nombre de cases suivant x
+        unsigned int y_size; //le nombre de cases suivant y
         unsigned int chamber_length; //longueur de la chamber
         unsigned int nozzle_length; //longueur de la tuyère
-	unsigned int iter_number_solver; //le nombre d'itérations du solver d'eq_diff
-	unsigned int iter_number_profiler; //le nombre d'itérations du profiler
-
-        string datafile_name; //chemin d'écriture du résultat
+        unsigned int iter_number_solver; //le nombre d'itérations du solver d'eq_diff
+        unsigned int iter_number_profiler; //le nombre d'itérations du profiler
 
         float time_step; //le pas de temps, qui sera utilisé par eq_diff
-    	float space_step; // pas d'espace
+        float space_step; // pas d'espace
 
-	nozzle_fitting_algo_en nozzle_fitting_algo; //profil d'initialisation de la tuyère, qui sera utilisé par le profiler
-	nozzle_fitting_init_arg_union nozzle_fitting_init_arg; // arguments nécéssaires à l'initialisation de l'aglo de fitting
+        nozzle_fitting_algo_en nozzle_fitting_algo; //profil d'initialisation de la tuyère, qui sera utilisé par le profiler
+        nozzle_fitting_init_arg_union nozzle_fitting_init_arg; // arguments nécéssaires à l'initialisation de l'aglo de fitting
 
         diff_eq_solver_algo_en diff_eq_solver_algo; //type de solveur pour le solveur d'equation différentielle
 
-	bool thermal_conduction; //vaudra true ou false selon le modèle ?
-	float lambda; //la conductivité thermique (qui pourra être utile selon le modèle ?
+        bool thermal_conduction; //vaudra true ou false selon le modèle ?
+        float lambda; //la conductivité thermique (qui pourra être utile selon le modèle ?
 	
-	gaz_type_en gaz_type; //vaudra "GP" ou "VDW" selon le type de gaz choisi
-	float VDW_a_coef; //le premier coef de Van der Waals
-	float VDW_b_coef; //le deuxième coef de Van der Waals
-	float mol_mass; //la masse molaire du gaz, utilisée dans l'équation d'état
-	float dyn_visc; //la viscosité dynamique, au cas où on décide de l'utiliser finalement
+        gaz_type_en gaz_type; //vaudra "GP" ou "VDW" selon le type de gaz choisi
+        float VDW_a_coef; //le premier coef de Van der Waals
+        float VDW_b_coef; //le deuxième coef de Van der Waals
+        float mol_mass; //la masse molaire du gaz, utilisée dans l'équation d'état
+        float dyn_visc; //la viscosité dynamique, au cas où on décide de l'utiliser finalement
 
-	init_conditions_struct init_cond; //les conditions initiales
+        init_conditions_struct init_cond; //les conditions initiales
 
         arglist_struct() {}
         ~arglist_struct() {}

@@ -79,7 +79,7 @@ void Nozzle_Profiler::set_init_conditions()
         float &chbr_turb_en = this->arglist_pt->init_cond.chamber_turb_en;
         float &chbr_turb_dis = this->arglist_pt->init_cond.chamber_turb_dis;
         float middle_press, middle_temp, middle_v_mass, middle_speed;
-        int middle = this->arglist_pt->y_size - this->arglist_pt->chamber_length -this->arglist_pt->nozzle_length;
+        int middle = this->arglist_pt->y_size - this->arglist_pt->chamber_length - this->arglist_pt->nozzle_length;
         
         register int i,j;
 
@@ -101,20 +101,20 @@ void Nozzle_Profiler::set_init_conditions()
                 }
                 for(i=i; i<this->arglist_pt->x_size; i++) {
                         this->mesh_grid_1[i][j].pressure = (atmo_press * (this->arglist_pt->y_size -1 - j) 
-                                                            + chbr_press * (j - middle)) / (this->arglist_pt->y_size - middle);
+                                                            + chbr_press * (j - middle)) / (this->arglist_pt->y_size - 1 - middle);
 
                         this->mesh_grid_1[i][j].temperature = (atmo_temp * (this->arglist_pt->y_size -1 - j) 
-                                                               + chbr_temp * (j - middle)) / (this->arglist_pt->y_size - middle);
+                                                               + chbr_temp * (j - middle)) / (this->arglist_pt->y_size - 1 - middle);
 
                         this->mesh_grid_1[i][j].vol_mass = (atmo_v_mass * (this->arglist_pt->y_size -1 - j) 
-                                                            + chbr_v_mass * (j - middle)) / (this->arglist_pt->y_size - middle);
+                                                            + chbr_v_mass * (j - middle)) / (this->arglist_pt->y_size - 1 - middle);
 
                         this->mesh_grid_1[i][j].speed[1] = (atmo_speed * (this->arglist_pt->y_size -1 - j) 
-                                                            + chbr_speed * (j - middle)) / (this->arglist_pt->y_size - middle);
+                                                            + chbr_speed * (j - middle)) / (this->arglist_pt->y_size - 1 - middle);
                                                             
-                        this->mesh_grid_1[i][j].turb_en = chbr_turb_en * (j - middle) / (this->arglist_pt->y_size - middle);
+                        this->mesh_grid_1[i][j].turb_en = chbr_turb_en * (j - middle) / (this->arglist_pt->y_size - 1 - middle);
                         
-                        this->mesh_grid_1[i][j].turb_dis = chbr_turb_dis * (j - middle) / (this->arglist_pt->y_size - middle);
+                        this->mesh_grid_1[i][j].turb_dis = chbr_turb_dis * (j - middle) / (this->arglist_pt->y_size - 1 - middle);
                 }
         }
         
