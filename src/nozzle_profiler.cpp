@@ -16,6 +16,7 @@
 
 // ======== implementation ========
 
+#define R 8.314
 
 // Fonctions générales appelées depuis l'exterieur
 
@@ -68,18 +69,18 @@ void Nozzle_Profiler::create_mesh_grids()
 void Nozzle_Profiler::set_init_conditions()
 {
         
+        float &mol_mass = this->arglist_pt->mol_mass;
         float &atmo_press = this->arglist_pt->init_cond.atmosphere_pressure;
         float &atmo_temp = this->arglist_pt->init_cond.atmosphere_temp;
-        float &atmo_v_mass = this->arglist_pt->init_cond.atmosphere_vol_mass;
         float &atmo_speed = this->arglist_pt->init_cond.atmosphere_speed;
         float &chbr_press = this->arglist_pt->init_cond.chamber_pressure;
         float &chbr_temp = this->arglist_pt->init_cond.chamber_temp;
-        float &chbr_v_mass = this->arglist_pt->init_cond.chamber_vol_mass;
         float &chbr_speed = this->arglist_pt->init_cond.chamber_speed;
         float &chbr_turb_en = this->arglist_pt->init_cond.chamber_turb_en;
         float &chbr_turb_dis = this->arglist_pt->init_cond.chamber_turb_dis;
-        float middle_press, middle_temp, middle_v_mass, middle_speed;
         int middle = this->arglist_pt->y_size - this->arglist_pt->chamber_length - this->arglist_pt->nozzle_length;
+        
+        float atmo_v_mass = atmo_press * mol_mass / (R * atmo_temp);
         
         register int i,j;
 
@@ -93,6 +94,7 @@ void Nozzle_Profiler::set_init_conditions()
         }
 
         for(j=middle; j<this->arglist_pt->y_size; j++){ 
+                
                 for(i=0; (( this->mesh_grid_1[i][j].is_wall and this->mesh_grid_1[i+1][j].is_wall) or not(this->mesh_grid_1[i][j].is_wall)); i++){
                         this->mesh_grid_1[i][j].pressure = atmo_press ;
                         this->mesh_grid_1[i][j].temperature = atmo_temp;  
@@ -106,8 +108,7 @@ void Nozzle_Profiler::set_init_conditions()
                         this->mesh_grid_1[i][j].temperature = (atmo_temp * (this->arglist_pt->y_size -1 - j) 
                                                                + chbr_temp * (j - middle)) / (this->arglist_pt->y_size - 1 - middle);
 
-                        this->mesh_grid_1[i][j].vol_mass = (atmo_v_mass * (this->arglist_pt->y_size -1 - j) 
-                                                            + chbr_v_mass * (j - middle)) / (this->arglist_pt->y_size - 1 - middle);
+                        this->mesh_grid_1[i][j].vol_mass = this->mesh_grid_1[i][j].pressure * mol_mass / (R * this->mesh_grid_1[i][j].temperature);
 
                         this->mesh_grid_1[i][j].speed[1] = (atmo_speed * (this->arglist_pt->y_size -1 - j) 
                                                             + chbr_speed * (j - middle)) / (this->arglist_pt->y_size - 1 - middle);

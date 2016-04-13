@@ -44,9 +44,6 @@ struct init_conditions_struct {
         float chamber_temp;
         float atmosphere_temp;
 
-        float chamber_vol_mass;
-        float atmosphere_vol_mass;
-
         float chamber_speed;
         float atmosphere_speed;
         

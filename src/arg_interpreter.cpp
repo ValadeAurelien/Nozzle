@@ -160,9 +160,6 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
         (this->UI)->cout_str("Enter the initial temperature of the chamber (float)");
         file << "init_chamber_temperature = " << (this->UI)->cin_str() << endl;
 
-        (this->UI)->cout_str("Enter the initial volumic mass of the chamber (float)");
-        file << "init_chamber_vol_mass = " << (this->UI)->cin_str() << endl;
-
         (this->UI)->cout_str("Enter the initial speed of the chamber (float)");
         file << "init_chamber_speed = " << (this->UI)->cin_str() << endl;
 
@@ -183,9 +180,6 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
 
         (this->UI)->cout_str("Enter the initial temperature of the atmostphere (float)");
         file << "init_atmosphere_temperature = " << (this->UI)->cin_str() << endl;
-
-        (this->UI)->cout_str("Enter the initial volumic mass of the atmosphere (float)");
-        file << "init_atmosphere_vol_mass = " << (this->UI)->cin_str() << endl;
 
         (this->UI)->cout_str("Enter the initial speed of the atmosphere (float)");
         file << "init_atmosphere_speed = " << (this->UI)->cin_str() << endl;
@@ -351,10 +345,6 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
         catch (...) {throw "AI: Invalid initial chamber temperature";}
 
         READ
-        try {this->arglist.init_cond.chamber_vol_mass = stof(arg_val);}
-        catch (...) {throw "AI: Invalid initial chamber volumic mass";}
-
-        READ
         try {this->arglist.init_cond.chamber_speed = stof(arg_val);}
         catch (...) {throw "AI: Invalid initial chamber gaz speed";}
 
@@ -373,10 +363,6 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
         READ
         try {this->arglist.init_cond.atmosphere_temp = stof(arg_val);}
         catch (...) {throw "AI: Invalid initial atmosphere temperature";}
-
-        READ
-        try {this->arglist.init_cond.atmosphere_vol_mass = stof(arg_val);}
-        catch (...) {throw "AI: Invalid initial atmosphere volumic mass";}
 
         READ
         try {this->arglist.init_cond.atmosphere_speed = stof(arg_val);}
