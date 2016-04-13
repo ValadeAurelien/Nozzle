@@ -46,7 +46,7 @@ class Diff_Eq_Solver
                 void calc_iteration_VDW_cart(); //méthode principale Van der Waals
                 void calc_iteration_PG_cyl(); //méthode principale gaz parfait, yoloswag en cylindriques
                 void calc_iteration_VDW_cyl();//méthode principale Van der Waals en cylindriques
-                void partial_calc_iteration_PG_cart_turb(int i_min, int i_max); //calcul sur une tranche horizontale
+                void partial_calc_iteration_PG_cart_turb(int i_min, int i_max, int thread_id); //calcul sur une tranche horizontale
                 void calc_iteration_PG_cart_turb(); //méthode principales en turbulence
                 void copy_case(int i, int j, int k, int l); //copie de la struct mesh_grid pour les conditions au bord
                 void exchange_mesh_grid_pts(); //echange des pointeurs des deux meshgrid

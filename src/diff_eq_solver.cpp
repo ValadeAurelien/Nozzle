@@ -14,7 +14,7 @@
 #include "usr_interface.h"
 #include <cmath>
 #include <vector>
-#include <thread>
+#include <iostream>
 
 #define R 8.314 //constante des gaz parfaits
 //toutes les constantes relatives au modèle k-epsilon
@@ -40,6 +40,7 @@ Diff_Eq_Solver::Diff_Eq_Solver(Usr_Interface *UI,Data_Mapper *DM, arglist_struct
         vector<data_t> thrust(this->arglist_pt->iter_number_solver);
         this->thrust = thrust;
         this->threads.resize(this->arglist_pt->nb_of_threads);
+        cout << threads.size() << " " << this->arglist_pt->nb_of_threads << endl ;
 }
 
 //fonction qui calcule le carré de la vitesse, le troisième argument vaut 1:mesh_grid_1 2:mesh_grid_2
@@ -911,7 +912,7 @@ void Diff_Eq_Solver::calc_iteration_PG_cart() {
 
 //calcule une itération temporelle des équations différentielles (gaz parfait, cartésiennes, turbulentes)
 
-void Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb(int i_min, int i_max)
+void Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb(int i_min, int i_max, int thread_id)
 {
     register int i,j;
     for (i = i_min ; i < i_max; i++) {
@@ -937,16 +938,16 @@ void Diff_Eq_Solver::calc_iteration_PG_cart_turb() {
     i_max = i_min + slice;
 
     for (t = 0 ; t < this->arglist_pt->nb_of_threads - 1; t++){ 
-        this->threads[t] = thread ( [=] {partial_calc_iteration_PG_cart_turb(i_min, i_max); }); // on envoie sur les coeurs
-        i_min += i_max;
+        this->threads[t] = thread (&Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb, this, i_min, i_max, t); // on envoie sur les coeurs
+        i_min = i_max;
         i_max += slice;
     }
 
-    this->threads[t] = thread ( [=] {partial_calc_iteration_PG_cart_turb(i_min, this->arglist_pt->x_size); }); // le dernier se tape le rab de la division euclidienne
+    this->threads[this->arglist_pt->nb_of_threads - 1] = 
+        thread (&Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb, this, i_min, this->arglist_pt->x_size, this->arglist_pt->nb_of_threads); // le dernier se tape le rab de la division euclidienne
 
-    for (t = 0; t < this->arglist_pt->nb_of_threads; t++) this->threads[t].join(); //on attend que tout le monde ait fini
-
-
+    for (auto &thrd : this->threads) thrd.join(); // <----- ca plante la bordel de merde !!!!!!
+                                                                                                                                              
     
     for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
            	copy_case(i,0,i,1);

@@ -84,6 +84,9 @@ void Data_Mapper::thrust_plotter(vector<data_t> *thrust_pt) {
         
         ofstream file;
         file.open(this->data_dir + "/final_prof_thrust.data", ios::out);
+        file << "# Result of the experimentation: " << this->argfile_name << endl << endl;
+        file << "#" << setw(WIDTH) << "time" << setw(WIDTH) << "thrust" << endl << endl;
+
         for (int k=0; k<thrust_pt->size();k++) {
                 file << setw(WIDTH) << k*this->arglist_pt->time_step 
                     << setw(WIDTH) << setprecision(PRECISION) << (*(thrust_pt))[k] 
