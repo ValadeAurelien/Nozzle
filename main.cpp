@@ -38,7 +38,12 @@ int main(int argc, char *argv[])
 
        // cas de l'aide
        if (strcmp(argv[1],"-h") == 0){
-               UI->cout_str("You asked for some help: \n blabla blablalbla \n");
+               UI->cout_str_no_space("You asked for some help");
+               UI->cout_str_no_space("Two options available:");
+               UI->cout_str_no_space("1/ --run-config argfile.arg");
+               UI->cout_str_no_space(">>> Run the given argfile");
+               UI->cout_str_no_space("2/ --new-config argfile.arg");
+               UI->cout_str_no_space(">>> Create a new configuration file interactively");
                return -1;
        }
        for (int i=1; i<argc; i++){

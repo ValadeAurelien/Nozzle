@@ -125,6 +125,8 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
         
         // Constantes numériques pour l'eq diff
 
+        string diff_eq_solver_algo = answer;
+
         if ( answer == "1" or answer == "3" ) {
                 (this->UI)->cout_str("Enter the Van der Waals coefficient 'a' (float)");
                 file << "VDW_a_coeff = " << (this->UI)->cin_str() << endl;
@@ -135,17 +137,6 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
         else {
                 file << "VDW_a_coeff = 0" << endl;
                 file << "VDW_b_coeff = 0" << endl;
-        }
-        if ( answer == "4") {
-                (this->UI)->cout_str("Enter the value of k in the chamber (float)");
-                file << "init_chamber_turb_en = " << (this->UI)->cin_str() << endl;
-                
-                (this->UI)->cout_str("Enter the value of epsilon in the chamber (float)");
-                file << "init_chamber_turb_dis = " << (this->UI)->cin_str() << endl;
-        }
-        else {
-                file << "init_chamber_turb_en = 0" << endl;
-                file << "init_chamber_turb_dis = 0" << endl;
         }
 
         (this->UI)->cout_str("Activate thermal conduction ? (bool: true/false)");
@@ -177,6 +168,18 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
 
         (this->UI)->cout_str("Enter the initial speed of the chamber (float)");
         file << "init_chamber_speed = " << (this->UI)->cin_str() << endl;
+
+        if ( diff_eq_solver_algo == "4") {
+                (this->UI)->cout_str("Enter the value of k in the chamber (float)");
+                file << "init_chamber_turb_en = " << (this->UI)->cin_str() << endl;
+                
+                (this->UI)->cout_str("Enter the value of epsilon in the chamber (float)");
+                file << "init_chamber_turb_dis = " << (this->UI)->cin_str() << endl;
+        }
+        else {
+                file << "init_chamber_turb_en = 0" << endl;
+                file << "init_chamber_turb_dis = 0" << endl;
+        }
 
         (this->UI)->cout_str("Enter the initial pressure of the atmostphere (float)");
         file << "init_atmosphere_pressure = " << (this->UI)->cin_str() << endl;
@@ -327,14 +330,6 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
         catch (...) {throw "AI: Invalid b coefficient of Van Der Waals";}
         
         READ
-        try {this->arglist.init_cond.chamber_turb_en = stof(arg_val);}
-        catch (...) {throw "AI: Invalid value of initial chamber turbulence energy";}
-        
-        READ
-        try {this->arglist.init_cond.chamber_turb_dis = stof(arg_val);}
-        catch (...) {throw "AI: Invalid value of initial chamber turbulence dissipation";}
-        
-        READ
         if (arg_val == "false")  {this->arglist.thermal_conduction = false;}
         else {
                 if (arg_val == "true")  {this->arglist.thermal_conduction = true;}
@@ -371,6 +366,14 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
         try {this->arglist.init_cond.chamber_speed = stof(arg_val);}
         catch (...) {throw "AI: Invalid initial chamber gaz speed";}
 
+        READ
+        try {this->arglist.init_cond.chamber_turb_en = stof(arg_val);}
+        catch (...) {throw "AI: Invalid value of initial chamber turbulence energy";}
+        
+        READ
+        try {this->arglist.init_cond.chamber_turb_dis = stof(arg_val);}
+        catch (...) {throw "AI: Invalid value of initial chamber turbulence dissipation";}
+        
         READ
         try {this->arglist.init_cond.atmosphere_pressure = stof(arg_val);}
         catch (...) {throw "AI: Invalid initial atmosphere pressure";}
