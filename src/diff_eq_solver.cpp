@@ -51,28 +51,48 @@ data_t Diff_Eq_Solver::speed2(int i, int j, int k) {
 
 //la pression totale est rho*e+P
 data_t Diff_Eq_Solver::pres_tot_PG(int i, int j) {
-        return(
-        mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+mesh_grid_1[i][j].pressure
-        );
+        if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
+        else {
+        	return(
+        	mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+mesh_grid_1[i][j].pressure
+        	);
+        }
 }
 
 data_t Diff_Eq_Solver::pres_tot_VDW(int i, int j) {
-        return(
-        mesh_grid_1[i][j].vol_mass*en_tot_VDW(i,j)+mesh_grid_1[i][j].pressure
-        );
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
+        else {
+        	return(
+        	mesh_grid_1[i][j].vol_mass*en_tot_VDW(i,j)+mesh_grid_1[i][j].pressure
+        	);
+        }
 }
 
 //l'énergie totale est u+e_c
 data_t Diff_Eq_Solver::en_tot_PG(int i, int j) {
-        return(
-        5.0/2.0*R/this->arglist_pt->mol_mass*mesh_grid_1[i][j].temperature + 1.0/2.0*speed2(i,j,1)
-        );
+        if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
+        else {
+        	return(
+        	5.0/2.0*R/this->arglist_pt->mol_mass*mesh_grid_1[i][j].temperature + 1.0/2.0*speed2(i,j,1)
+        	);
+        }
 }
 
 data_t Diff_Eq_Solver::en_tot_VDW(int i, int j) {
-        return(
-        5.0/2.0*R*mesh_grid_1[i][j].temperature/this->arglist_pt->mol_mass + 1.0/2.0*speed2(i,j,1) - this->arglist_pt->VDW_a_coef*mesh_grid_1[i][j].vol_mass/pow(this->arglist_pt->mol_mass,2)
-        );
+        if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
+        else {
+        	return(
+        	5.0/2.0*R*mesh_grid_1[i][j].temperature/this->arglist_pt->mol_mass + 1.0/2.0*speed2(i,j,1) - this->arglist_pt->VDW_a_coef*mesh_grid_1[i][j].vol_mass/pow(this->arglist_pt->mol_mass,2)
+        	);
+        }
 }
 
 //divergence de rho*v en cartésiennes
@@ -258,20 +278,38 @@ data_t Diff_Eq_Solver::deriv_y_vy(int i, int j) {
 //le "strain" : c'est le déplacement utilisé dans le calcul de la contrainte (ici en cartésiennes)
 //attention que le déplacement est symétrique, strain_xy=strain_yx
 data_t Diff_Eq_Solver::strain_xy(int i, int j) {
-	return(1.0/2.0*(deriv_y_vx(i,j)+deriv_x_vy(i,j)));
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
+        else {
+		return(1.0/2.0*(deriv_y_vx(i,j)+deriv_x_vy(i,j)));
+        }
 }
 
 data_t Diff_Eq_Solver::strain_xx(int i, int j) {
-	return(deriv_x_vx(i,j));
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
+        else {
+		return(deriv_x_vx(i,j));
+        }
 }
 
 data_t Diff_Eq_Solver::strain_yy(int i, int j) {
-	return(deriv_y_vy(i,j));
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
+	else {
+		return(deriv_y_vy(i,j));
+	}
 }
 
 //les dérivées de la contrainte moléculaire pour le modèle non turbulent
 //attention : double dérivée peut sortir du tableau, si ça sort on met 0
 data_t Diff_Eq_Solver::deriv_y_tauxy(int i, int j) {
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
 	if (is_in(i,j+2) && is_in(i,j-2)) {
 		return(
 		(mol_stress_xy(i,j+1)-mol_stress_xy(i,j-1))
@@ -284,6 +322,9 @@ data_t Diff_Eq_Solver::deriv_y_tauxy(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_x_tauxx(int i, int j) {
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
 	if (is_in(i+2,j) && is_in(i-2,j)) {
 		return(
 		(mol_stress_xx(i+1,j)-mol_stress_xx(i-1,j))
@@ -296,6 +337,9 @@ data_t Diff_Eq_Solver::deriv_x_tauxx(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_y_tauyy(int i, int j) {
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
 	if (is_in(i,j+2) && is_in(i,j-2)) {
 		return(
 		(mol_stress_yy(i,j+1)-mol_stress_yy(i,j-1))
@@ -308,6 +352,9 @@ data_t Diff_Eq_Solver::deriv_y_tauyy(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_x_tauyx(int i, int j) {
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
 	if (is_in(i+2,j) && is_in(i-2,j)) {
 		return(
 		(mol_stress_xy(i+1,j)-mol_stress_xy(i-1,j))
@@ -342,6 +389,9 @@ data_t Diff_Eq_Solver::vtauy(int i, int j) {
 //les dérivées de contrainte*vitesse (en cartésiennes non tubulentes)
 //attention à ne pas sortir du tableau
 data_t Diff_Eq_Solver::deriv_x_vtaux(int i, int j) {
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
 	if (is_in(i+2,j) && is_in(i-2,j)) {
 		return(
 		(vtaux(i+1,j)-vtaux(i-1,j))
@@ -354,6 +404,9 @@ data_t Diff_Eq_Solver::deriv_x_vtaux(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_y_vtauy(int i, int j) {
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+	}
 	if (is_in(i,j+2) && is_in(i,j-2)) {
 		return(
 		(vtauy(i,j+1)-vtauy(i,j-1))
@@ -382,11 +435,21 @@ data_t Diff_Eq_Solver::lambda_t(int i, int j) {
 
 //définition du flux de chaleur turbulent (en cartésiennes)
 data_t Diff_Eq_Solver::heat_flux_x_turb(int i, int j) {
-	return((this->arglist_pt->lambda+lambda_t(i,j))*deriv_x_temp(i,j));
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
+	else {
+		return((this->arglist_pt->lambda+lambda_t(i,j))*deriv_x_temp(i,j));
+	}
 }
 
 data_t Diff_Eq_Solver::heat_flux_y_turb(int i, int j) {
-	return((this->arglist_pt->lambda+lambda_t(i,j))*deriv_y_temp(i,j));
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
+	else {
+		return((this->arglist_pt->lambda+lambda_t(i,j))*deriv_y_temp(i,j));
+	}
 }
 
 //divergence du flux de chaleur turbulent (en cartésiennes)
@@ -596,6 +659,9 @@ data_t Diff_Eq_Solver::deriv_y_mudyk(int i, int j) {
 
 //dérivées de k (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_k(int i, int j) {
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
 	if (is_in(i+1,j) && is_in(i-1,j)) {
 		return(
 		(mesh_grid_1[i+1][j].turb_en-mesh_grid_1[i-1][j].turb_en)
@@ -608,6 +674,9 @@ data_t Diff_Eq_Solver::deriv_x_k(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_y_k(int i, int j) {
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
 	if (is_in(i,j+1) && is_in(i,j-1)) {
 		return(
 		(mesh_grid_1[i][j+1].turb_en-mesh_grid_1[i][j-1].turb_en)
@@ -661,6 +730,9 @@ data_t Diff_Eq_Solver::deriv_y_mudyepsilon(int i, int j) {
 
 //dérivées de epsilon (cartésiennes)
 data_t Diff_Eq_Solver::deriv_x_epsilon(int i, int j) {
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
 	if (is_in(i+1,j) && is_in(i-1,j)) {
 		return(
 		(mesh_grid_1[i+1][j].turb_dis-mesh_grid_1[i-1][j].turb_dis)
@@ -673,6 +745,9 @@ data_t Diff_Eq_Solver::deriv_x_epsilon(int i, int j) {
 }
 
 data_t Diff_Eq_Solver::deriv_y_epsilon(int i, int j) {
+	if (mesh_grid_[i][j].is_wall) {
+        	return(0);
+        }
 	if (is_in(i,j+1) && is_in(i,j-1)) {
 		return(
 		(mesh_grid_1[i][j+1].turb_dis-mesh_grid_1[i][j-1].turb_dis)
