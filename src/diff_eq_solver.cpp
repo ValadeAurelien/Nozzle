@@ -912,7 +912,7 @@ void Diff_Eq_Solver::calc_iteration_PG_cart() {
 
 void Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb(int i_min, int i_max)
 {
-    register i,j;
+    register int i,j;
     for (i = i_min ; i < i_max; i++) {
         for (j = 1 ; j < this->arglist_pt->y_size-1; j++) {
             if (not(mesh_grid_1[i][j].is_wall)) {
@@ -931,7 +931,7 @@ void Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb(int i_min, int i_max)
 void Diff_Eq_Solver::calc_iteration_PG_cart_turb() {
     
     // on découpe la matrice en bandes horizontales -> chaque calcul part sur un coeur
-    register int t, i_min, i_max, slice;
+    register int i, j, t, i_min, i_max, slice;
     i_min = 1;
     slice = this->arglist_pt->x_size / this->arglist_pt->nb_of_threads; // taille d'une tranche horizontale
     i_max = i_min + slice;

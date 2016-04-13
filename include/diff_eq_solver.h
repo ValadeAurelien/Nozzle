@@ -46,6 +46,7 @@ class Diff_Eq_Solver
                 void calc_iteration_VDW_cart(); //méthode principale Van der Waals
                 void calc_iteration_PG_cyl(); //méthode principale gaz parfait, yoloswag en cylindriques
                 void calc_iteration_VDW_cyl();//méthode principale Van der Waals en cylindriques
+                void partial_calc_iteration_PG_cart_turb(int i_min, int i_max); //calcul sur une tranche horizontale
                 void calc_iteration_PG_cart_turb(); //méthode principales en turbulence
                 void copy_case(int i, int j, int k, int l); //copie de la struct mesh_grid pour les conditions au bord
                 void exchange_mesh_grid_pts(); //echange des pointeurs des deux meshgrid
@@ -76,8 +77,8 @@ class Diff_Eq_Solver
                 data_t speed2(int i, int j, int k);//la norme au carré de la vitesse
                 data_t r(int i);//définit la coordonnée radiale r en fonction de i l'ordonnée dans le tableau
                 data_t pres_tot_PG(int i, int j);//en fait c'est rho*e+P
-                data_t r(int i);//définit la coordonnée radiale r en fonction de i l'ordonnée dans le tableau
-                data_t pres_tot_PG(int i, int j);//en fait c'est rho*e+P
+//                data_t r(int i);//définit la coordonnée radiale r en fonction de i l'ordonnée dans le tableau
+//                data_t pres_tot_PG(int i, int j);//en fait c'est rho*e+P
                 data_t en_tot_PG(int i, int j);//en fait c'est e l'énergie massique
                 data_t pres_tot_VDW(int i, int j);//en fait c'est encore rho*e+P
                 data_t en_tot_VDW(int i, int j);//en fait c'est l'énergie massique
