@@ -20,3 +20,6 @@ pour quitter: ne pas non plus etre en mode insertion puis :q
 
 
 au début c'est chiant tkt ! ;)
+
+
+splot "segment1.data" u 2:(-$1):7, "segment1.data" u 2:( $3==1 ? (-$1) : 1/0 ):(0.0) with points linecolor rgb "white"
