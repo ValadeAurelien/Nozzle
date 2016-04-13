@@ -161,6 +161,11 @@ class Diff_Eq_Solver
                 data_t deriv_x_epsilon(int i, int j);
                 data_t deriv_y_epsilon(int i, int j);
 
+                // ajoutées par aurélien car pas déclarée #git commit foireux
+             
+                data_t diver_vtau(int i, int j);
+                data_t deriv_y_tauxy_turb(int i, int j);
+
                 bool is_in(int i, int j);
         
         private:

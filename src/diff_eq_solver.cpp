@@ -11,6 +11,7 @@
 #include "arg_interpreter.h"
 #include "nozzle_profiler.h"
 #include "data_mapper.h"
+#include "usr_interface.h"
 #include <cmath>
 #include <vector>
 #include <thread>
@@ -929,7 +930,6 @@ void Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb(int i_min, int i_max)
 }
 
 void Diff_Eq_Solver::calc_iteration_PG_cart_turb() {
-    
     // on découpe la matrice en bandes horizontales -> chaque calcul part sur un coeur
     register int i, j, t, i_min, i_max, slice;
     i_min = 1;
@@ -1102,8 +1102,8 @@ void Diff_Eq_Solver::solve()
                         break;
                 
                 case PG_cart_turb:
-                	this->solve_PG_cart_turb();
-                	break;
+                        this->solve_PG_cart_turb();
+                        break;
 
                 default:
                         throw "DES : Bad solving algorithm";
