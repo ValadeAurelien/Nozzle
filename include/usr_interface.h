@@ -18,6 +18,7 @@
 // ======== includes ========
 
 #include <string>
+#include <chrono>
 
 // ======== interface ========
 
@@ -27,22 +28,28 @@ class Usr_Interface
 {
         public:
                 Usr_Interface () {}
+                void new_line();
+                void space();
+
+                void cout_str_no_space(string str);
+                void cout_str_no_endl(const char msg[]);
                 void cout_str(const char msg[]);
                 void cout_str(string str);
                 
                 void cout_int(int x);
                 void cout_float(float x);
-
-                void new_line();
-                
-                void cout_str_no_space(string str);
-                void cout_str_no_endl(const char msg[]);
                 
                 void cout_err(const char *err[]);
                 void cout_err(const char err[]);
+                
                 string cin_str();
+
+                void start_DES_chrono();
+                int measure_DES_chrono();
+                void refresh_DES_progress(int i, int max);
+        
         private:
-                int i;
+                chrono::high_resolution_clock::time_point DES_start;
 };
 
 #endif 

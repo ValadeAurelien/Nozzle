@@ -42,17 +42,14 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
         (this->UI)->cout_str("Enter the width of the pattern (int)");
         file << "y_size = " << (this->UI)->cin_str() << endl;
 
-        (this->UI)->cout_str("Enter the length of the chamber (int)");
-        file << "chamber_length = " << (this->UI)->cin_str() << endl;
-
-        (this->UI)->cout_str("Enter the length of the nozzle (int)");
-        file << "noozle_length = " << (this->UI)->cin_str() << endl;
-
-        (this->UI)->cout_str("Enter the time step (float)");
+        (this->UI)->cout_str("Enter the initial time step (float)");
         file << "time_step = " << (this->UI)->cin_str() << endl;
 
         (this->UI)->cout_str("Enter the space step (float)");
         file << "space_step = " << (this->UI)->cin_str() << endl;
+
+        (this->UI)->cout_str("Enter the CFL condition (float)");
+        file << "CFL_cond = " << (this->UI)->cin_str() << endl;
 
         (this->UI)->cout_str("Enter the number of iterations for the eq_diff solver (int)");
         file << "iter_number_solver = " << (this->UI)->cin_str() << endl;
@@ -63,61 +60,23 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
         (this->UI)->cout_str("Enter the number of threads allocated to the program (int)");
         file << "nb_of_threads = " << (this->UI)->cin_str() << endl;
 
-        //Paramètres de fiiting, choix algo et conditions initiales
+        //Paramètres de fitting, et conditions initiales
 
-        string answer;
-        (this->UI)->cout_str("Choose the fitting algorithm nozzle_fitting_algo (LAGRANGE=0,BRUTAL_FORCE=1,SEGMENT=2)");
-        answer = this->UI->cin_str();
-        file << "nozzle_fitting_algo = " << answer << endl;
 
-        if (answer == "0") {
-                this->UI->cout_str("Choose how many points you want to fix for the chamber");
-                answer = this->UI->cin_str();
-                file << "->nb_pts_chamber = " << answer << endl;
+        this->UI->cout_str("Choose how many points you want to usei for the initial nozzle profile (int)");
+        string answer = this->UI->cin_str();
+        file << "->nb_pts = " << answer << endl;
                 
-                this->UI->cout_str("Give the abscisses of your points");
-                for (int i=0; i < stoi(answer); i++) {
-                        file << "->abs_chamber = " << this->UI->cin_str() << endl;
-                }
-
-                this->UI->cout_str("Give the ordinates of your points");
-                for (int i=0; i < stoi(answer); i++) {
-                        file << "->ord_chamber = " << this->UI->cin_str() << endl;
-                }
-
-                this->UI->cout_str("Choose how many points you want to fix for the nozzle");
-                answer = this->UI->cin_str();
-                file << "->nb_pts_nozzle = " << answer << endl;
-                
-                this->UI->cout_str("Give the abscisses of your points");
-                for (int i=0; i < stoi(answer); i++) {
-                        file << "->abs_nozzle = " << this->UI->cin_str() << endl;
-                }
-
-                this->UI->cout_str("Give the ordinates of your points");
-                for (int i=0; i < stoi(answer); i++) {
-                        file << "->ord_nozzle = " << this->UI->cin_str() << endl;
-                }
-
+        this->UI->cout_str("Give the abscisses of your points (int)");
+        for (int i=0; i < stoi(answer); i++) {
+                file << "->abs = " << this->UI->cin_str() << endl;
         }
 
-        if (answer == "2") {
-                this->UI->cout_str("Choose how many points you want to use");
-                answer = this->UI->cin_str();
-                file << "->nb_pts = " << answer << endl;
-                
-                this->UI->cout_str("Give the abscisses of your points (int)");
-                for (int i=0; i < stoi(answer); i++) {
-                        file << "->abs = " << this->UI->cin_str() << endl;
-                }
-
-                this->UI->cout_str("Give the ordinates of your points (int)");
-                for (int i=0; i < stoi(answer); i++) {
-                        file << "->ord = " << this->UI->cin_str() << endl;
-                }
-
+        this->UI->cout_str("Give the ordinates of your points (int)");
+        for (int i=0; i < stoi(answer); i++) {
+                file << "->ord = " << this->UI->cin_str() << endl;
         }
-        //else throw "AI: Not codded yet!!!!!";
+
         
         (this->UI)->cout_str("Choose the differential equation solver algorithm (PG_cart=0,VDW_cart=1,PG_cyl=2,VDW_cyl=3,PG_cart_turb=4)");
         answer = (this->UI)->cin_str();
@@ -125,7 +84,7 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
         
         // Constantes numériques pour l'eq diff
 
-        string diff_eq_solver_algo = answer;
+        string diff_eq_solver_algo = answer; //degueu mais nécéssaire pour plus tard --> constante pour les gaz et turbulences
 
         if ( answer == "1" or answer == "3" ) {
                 (this->UI)->cout_str("Enter the Van der Waals coefficient 'a' (float)");
@@ -223,22 +182,16 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
         catch (...) {throw "AI: Invalid y size";}
 
         READ
-        try {this->arglist.chamber_length = stoi(arg_val);}
-        catch (...) {throw "AI: Invalid chamber length";}
+        try {this->arglist.init_time_step = stod(arg_val);}
+        catch (...) {throw "AI: Invalid initial time step";}
 
         READ
-        try {this->arglist.nozzle_length = stoi(arg_val);}
-        catch (...) {throw "AI: Invalid nozzle length";}
-
-        if (this->arglist.chamber_length + this->arglist.nozzle_length >= this->arglist.y_size) throw "AI: Invalid nozzle and/or chamber length";
-
-        READ
-        try {this->arglist.time_step = stof(arg_val);}
-        catch (...) {throw "AI: Invalid time step";}
-
-        READ
-        try {this->arglist.space_step = stof(arg_val);}
+        try {this->arglist.space_step = stod(arg_val);}
         catch (...) {throw "AI: Invalid space space";}
+
+        READ
+        try {this->arglist.CFL_cond = stod(arg_val);}
+        catch (...) {throw "AI: Invalid CFL condition";}
 
         READ
         try {this->arglist.iter_number_solver = stoi(arg_val);}
@@ -254,60 +207,21 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
 
         // Paramètre de fitting, choix algo et arguments pour les conditions initiales
 
-        READ
-        if (arg_val == "0") {this->arglist.nozzle_fitting_algo = LAGRANGE;}
-        else {
-                if (arg_val == "1") {this->arglist.nozzle_fitting_algo = BRUTAL_FORCE;}
-                else {
-                        if (arg_val == "2") {this->arglist.nozzle_fitting_algo = SEGMENT;} 
-                        else {throw "AI: Invalid choice of algorithm";}
-                }
-        }
-
-        if (this->arglist.nozzle_fitting_algo == LAGRANGE) {
-                READ
-                this->arglist.nozzle_fitting_init_arg.lagrange.nb_pts_chamber = stoi(arg_val);
-                
-                for (int i=0; i<this->arglist.nozzle_fitting_init_arg.lagrange.nb_pts_chamber; i++){
-                        READ
-                        this->arglist.nozzle_fitting_init_arg.lagrange.abscisses_chamber.push_back( stof(arg_val) );        
-                }
-
-                for (int i=0; i<this->arglist.nozzle_fitting_init_arg.lagrange.nb_pts_chamber; i++){
-                        READ
-                        this->arglist.nozzle_fitting_init_arg.lagrange.ordinates_chamber.push_back( stof(arg_val) );        
-                }
-
-                READ
-                this->arglist.nozzle_fitting_init_arg.lagrange.nb_pts_nozzle = stoi(arg_val);
-                
-                for (int i=0; i<this->arglist.nozzle_fitting_init_arg.lagrange.nb_pts_nozzle; i++){
-                        READ
-                        this->arglist.nozzle_fitting_init_arg.lagrange.abscisses_nozzle.push_back( stof(arg_val) );        
-                }
-
-                for (int i=0; i<this->arglist.nozzle_fitting_init_arg.lagrange.nb_pts_nozzle; i++){
-                        READ
-                        this->arglist.nozzle_fitting_init_arg.lagrange.ordinates_nozzle.push_back( stof(arg_val) );        
-                }
-        }
         
-        if (this->arglist.nozzle_fitting_algo == SEGMENT) {
+        READ
+        try {this->arglist.nozzle_fitting_init_arg.nb_pts = stoi(arg_val);}
+        catch (...) {throw "AI: Invalid number of points for the initial profile";}
+        
+        for (int i=0; i<this->arglist.nozzle_fitting_init_arg.nb_pts; i++){
                 READ
-                this->arglist.nozzle_fitting_init_arg.segment.nb_pts = stoi(arg_val);
-                
-                for (int i=0; i<this->arglist.nozzle_fitting_init_arg.segment.nb_pts; i++){
-                        READ
-                        try {this->arglist.nozzle_fitting_init_arg.segment.abscisses.push_back( stoi(arg_val) );}
-                        catch (...) {throw "AI: Bad abcisse value";}
-                }
+                try {this->arglist.nozzle_fitting_init_arg.abscisses.push_back( stoi(arg_val) );}
+                catch (...) {throw "AI: Bad abcisse value";}
+        }
 
-                for (int i=0; i<this->arglist.nozzle_fitting_init_arg.segment.nb_pts; i++){
-                        READ
-                        try {this->arglist.nozzle_fitting_init_arg.segment.ordinates.push_back( stoi(arg_val) );}
-                        catch (...) {throw "AI: Bad ordinate value";}
-                }
-
+        for (int i=0; i<this->arglist.nozzle_fitting_init_arg.nb_pts; i++){
+                READ
+                try {this->arglist.nozzle_fitting_init_arg.ordinates.push_back( stoi(arg_val) );}
+                catch (...) {throw "AI: Bad ordinate value";}
         }
 
         READ 
@@ -333,7 +247,7 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
         READ
         try {this->arglist.VDW_b_coef = stof(arg_val);}
         catch (...) {throw "AI: Invalid b coefficient of Van Der Waals";}
-        
+    
         READ
         if (arg_val == "false")  {this->arglist.thermal_conduction = false;}
         else {

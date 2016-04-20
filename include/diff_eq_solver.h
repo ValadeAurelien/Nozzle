@@ -29,6 +29,27 @@ typedef double data_t;
 
 // ======== interface ========
 
+enum variables {
+    pressure, temperature, vol_mass, speed0, speed1, turb_en, turb_dis
+};
+
+struct variables_max_struct {
+    vector<data_t> pressure_loc;
+    data_t pressure;
+    vector<data_t> temperature_loc;
+    data_t temperature;
+    vector<data_t> vol_mass_loc;
+    data_t vol_mass;
+    vector<data_t> speed0_loc;
+    data_t speed0;
+    vector<data_t> speed1_loc;
+    data_t speed1;
+    vector<data_t> turb_en_loc;
+    data_t turb_en;
+    vector<data_t> turb_dis_loc;
+    data_t turb_dis;
+};
+
 class Diff_Eq_Solver
 {
         public:
@@ -74,7 +95,7 @@ class Diff_Eq_Solver
                 void update_epsilon_PG_turb(int i, int j);
                 
                 //quelques fonctions pour clarifier le bazar
-                data_t speed2(int i, int j, int k);//la norme au carré de la vitesse
+                data_t speed2(int i, int j, mesh_grid_t *mesh_grid_pt);//la norme au carré de la vitesse
                 data_t r(int i);//définit la coordonnée radiale r en fonction de i l'ordonnée dans le tableau
                 data_t pres_tot_PG(int i, int j);//en fait c'est rho*e+P
 //                data_t r(int i);//définit la coordonnée radiale r en fonction de i l'ordonnée dans le tableau
@@ -167,14 +188,33 @@ class Diff_Eq_Solver
                 data_t deriv_y_tauxy_turb(int i, int j);
 
                 bool is_in(int i, int j);
-        
+ 
+                // fonctions de recherche de maximum
+                
+                void find_all_max();
+                void partial_find_all_max(int i_min, int i_max, int t);
+                data_t get_pressure(int i, int j);
+                data_t get_temperature(int i, int j);
+                data_t get_vol_mass(int i, int j);
+                data_t get_speed0(int i, int j);
+                data_t get_speed1(int i, int j);
+                data_t get_turb_en(int i, int j);
+                data_t get_turb_dis(int i, int j);
+                void calc_all_max();
+
+                // attributs partagés
+
+                vector<data_t> thrust;
+                vector<data_t> time_steps;                
+                mesh_grid_t *mesh_grid_pt2;
+                variables_max_struct variables_max;
+
         private:
                 Usr_Interface *UI; //pointeur vers l'object d'interface utilisateur
                 Data_Mapper *DM;
                 arglist_struct *arglist_pt; //pointeur vers la arglist
                 mesh_grid_t *mesh_grid_pt1; //pointeur vers le tableau tuyère
-                mesh_grid_t *mesh_grid_pt2;
-                vector<data_t> thrust;
+                
                 vector<thread> threads;
 };
 

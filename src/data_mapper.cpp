@@ -11,6 +11,7 @@
 #include "arg_interpreter.h"
 #include "usr_interface.h"
 #include "nozzle_profiler.h"
+#include "diff_eq_solver.h"
 
 #include <iostream>
 #include <fstream>
@@ -31,26 +32,35 @@ Data_Mapper::Data_Mapper(Usr_Interface *UI, arglist_struct *arglist_pt, string a
         string sub_data_dir = argfile_name.substr(0, pos);
 
         this->data_dir = this->PATH + sub_data_dir;
-
 }
 
 void Data_Mapper::create_directory()
 {
-        this->UI->cout_str("DM-> saving mesh grid datas in " + this->data_dir);
         system( ("mkdir 2>/dev/null " + this->data_dir).c_str() );      
 }
 
 
-void Data_Mapper::create_datafile_from_mesh_grid(mesh_grid_t *mesh_grid_pt)
+void Data_Mapper::create_datafile_from_mesh_grid(Diff_Eq_Solver *DES)
 {
-        mesh_grid_t &mesh_grid = *mesh_grid_pt;
+        mesh_grid_t &mesh_grid = (*(DES->mesh_grid_pt2));
 
         this->create_directory();
+        this->UI->cout_str("DM-> saving mesh grid datas in " + this->data_dir);
 
         ofstream file;
-        file.open(this->data_dir + "/final_prof_meshgrid.data", ios::out);
+        file.open(this->data_dir + "/meshgrid.data", ios::out);
 
         file << "# Result of the experimentation: " << this->argfile_name << endl << endl;
+        file << "# Maximums (asbolute values): " << endl
+            << "# pressure = " << setprecision(PRECISION) << DES->variables_max.pressure << endl
+            << "# temperature = " << setprecision(PRECISION) << DES->variables_max.temperature << endl
+            << "# vol_mass = " << setprecision(PRECISION) << DES->variables_max.vol_mass << endl
+            << "# speed0 = " << setprecision(PRECISION) << DES->variables_max.speed0 << endl
+            << "# speed1 = " << setprecision(PRECISION) << DES->variables_max.speed1 << endl
+            << "# turb_en = " << setprecision(PRECISION) << DES->variables_max.turb_en << endl
+            << "# turb_dis = " << setprecision(PRECISION) << DES->variables_max.turb_dis << endl
+            << endl;
+
         file << "#" << setw(WIDTH) << "x" << setw(WIDTH) << "y"
                 << setw(WIDTH) << "is_wall" << setw(WIDTH) << "pressure"
                 << setw(WIDTH) << "temper" << setw(WIDTH) << "vol_mass"
@@ -78,19 +88,23 @@ void Data_Mapper::create_datafile_from_mesh_grid(mesh_grid_t *mesh_grid_pt)
         file.close();
 }
 
-void Data_Mapper::thrust_plotter(vector<data_t> *thrust_pt) {
+void Data_Mapper::thrust_plotter(Diff_Eq_Solver *DES) {
         
         this->create_directory();
-        
-        ofstream file;
-        file.open(this->data_dir + "/final_prof_thrust.data", ios::out);
-        file << "# Result of the experimentation: " << this->argfile_name << endl << endl;
-        file << "#" << setw(WIDTH) << "time" << setw(WIDTH) << "thrust" << endl << endl;
+        this->UI->cout_str("DM-> saving time step and thrust datas in " + this->data_dir);
 
-        for (int k=0; k<thrust_pt->size();k++) {
-                file << setw(WIDTH) << k*this->arglist_pt->time_step 
-                    << setw(WIDTH) << setprecision(PRECISION) << (*(thrust_pt))[k] 
+        ofstream file;
+        file.open(this->data_dir + "/time_step_n_thrust.data", ios::out);
+        file << "# Result of the experimentation: " << this->argfile_name << endl << endl;
+        file << "#" << setw(WIDTH) << "time" <<  setw(WIDTH) << "time_step" << setw(WIDTH) << "thrust" << endl << endl;
+
+        double time = 0;
+        for (int k=0; k<this->arglist_pt->iter_number_solver;k++) {
+                file << setw(WIDTH) << setprecision(PRECISION) << time
+                    << setw(WIDTH) << setprecision(PRECISION) << DES->time_steps[k]
+                    << setw(WIDTH) << setprecision(PRECISION) << DES->thrust[k] 
                     << endl;
+                time += DES->time_steps[k];
         }
         file.close();
 }

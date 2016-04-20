@@ -30,29 +30,6 @@ Nozzle_Profiler::Nozzle_Profiler(Usr_Interface *UI, Data_Mapper *DM, arglist_str
 }
 
 
-void Nozzle_Profiler::profile()
-{
-        switch ( this->arglist_pt->nozzle_fitting_algo )
-        {
-                case BRUTAL_FORCE: 
-                        this->profile_brutal_force();
-                        break;
-
-                case LAGRANGE:
-                        this->profile_lagrange();
-                        break;
-
-                case SEGMENT:
-                        this->profile_segment();
-                        break;
-
-                default:
-                        throw "NP: Bad profilling algorithm";
-                        break;
-        }
-        this->save_mesh_grid();
-}
-
 // Algos internes
 
 
@@ -83,7 +60,7 @@ void Nozzle_Profiler::set_init_conditions()
         float &chbr_turb_en = this->arglist_pt->init_cond.chamber_turb_en;
         float &chbr_turb_dis = this->arglist_pt->init_cond.chamber_turb_dis;
         
-        int middle = this->arglist_pt->y_size - this->arglist_pt->chamber_length - this->arglist_pt->nozzle_length;
+        int middle = this->arglist_pt->nozzle_fitting_init_arg.abscisses[0];
         
         
         register int i,j;
@@ -151,7 +128,7 @@ void Nozzle_Profiler::set_init_conditions()
 
 void Nozzle_Profiler::save_mesh_grid()
 {
-        this->DM->create_datafile_from_mesh_grid(&(this->mesh_grid_1));
+        this->DM->create_datafile_from_mesh_grid(this->DES);
 }
 
 void Nozzle_Profiler::set_wall(int i,int j)
@@ -167,107 +144,6 @@ bool Nozzle_Profiler::is_in_x_range(int i)
 {
         return (i <= this->arglist_pt->x_size and i >= 0) ;
 }
-// -- Algo force brute 
-
-void Nozzle_Profiler::init_profile_brutal_force()
-{
-        int i;       
-}
-
-void Nozzle_Profiler::profile_brutal_force()
-{
-        int i;       
-}
-
-void Nozzle_Profiler::one_iteration_brutal_force()
-{
-        int i;       
-}
-
-// -- Algo Lagrange
-
-float Nozzle_Profiler::lagrange_chamber(float X)
-{
-        float Y=0;
-        float Z=1;
-        register int i,j;
-        for (i=0; i<this->arglist_pt->nozzle_fitting_init_arg.lagrange.nb_pts_chamber; i++){
-                for(j=0; j<i; j++){
-                      Z *= (X - this->arglist_pt->nozzle_fitting_init_arg.lagrange.abscisses_chamber[j])/
-                           (this->arglist_pt->nozzle_fitting_init_arg.lagrange.abscisses_chamber[i] - 
-                            this->arglist_pt->nozzle_fitting_init_arg.lagrange.abscisses_chamber[j]);  
-                }
-                for(j=i+1; j<this->arglist_pt->nozzle_fitting_init_arg.lagrange.nb_pts_chamber; j++){
-                      Z *= (X - this->arglist_pt->nozzle_fitting_init_arg.lagrange.abscisses_chamber[j])/
-                           (this->arglist_pt->nozzle_fitting_init_arg.lagrange.abscisses_chamber[i] - 
-                            this->arglist_pt->nozzle_fitting_init_arg.lagrange.abscisses_chamber[j]);  
-                }
-                Y += Z;
-        }
-        return Y;
-}
-
-float Nozzle_Profiler::lagrange_nozzle(float X)
-{
-        float Y=0;
-        float Z=1;
-        register int i,j;
-        for (i=0; i<this->arglist_pt->nozzle_fitting_init_arg.lagrange.nb_pts_nozzle; i++){
-                for(j=0; j<i; j++){
-                      Z *= (X - this->arglist_pt->nozzle_fitting_init_arg.lagrange.abscisses_nozzle[j])/
-                           (this->arglist_pt->nozzle_fitting_init_arg.lagrange.abscisses_nozzle[i] - 
-                            this->arglist_pt->nozzle_fitting_init_arg.lagrange.abscisses_nozzle[j]);  
-                }
-                for(j=i+1; j<this->arglist_pt->nozzle_fitting_init_arg.lagrange.nb_pts_nozzle; j++){
-                      Z *= (X - this->arglist_pt->nozzle_fitting_init_arg.lagrange.abscisses_nozzle[j])/
-                           (this->arglist_pt->nozzle_fitting_init_arg.lagrange.abscisses_nozzle[i] - 
-                            this->arglist_pt->nozzle_fitting_init_arg.lagrange.abscisses_nozzle[j]);  
-                }
-                Y += Z;
-        }
-        return Y;
-}
-
-void Nozzle_Profiler::init_profile_lagrange()
-{
-        this->UI->cout_str("NP-> initializing lagrange profile...");
-        register int i,j;
-        for (j=this->arglist_pt->y_size - this->arglist_pt->chamber_length - this->arglist_pt->nozzle_length; j<this->arglist_pt->y_size - this->arglist_pt->chamber_length; j++){
-                
-                i = floor(this->lagrange_nozzle(i*this->arglist_pt->space_step));
-                if (this->is_in_x_range(i)){
-                        this->mesh_grid_1[i][j].is_wall = true;
-                        this->mesh_grid_2[i][j].is_wall = true;
-                }
-                else {throw "NP: impossible to draw initial profile: some points are outside the matrix";}
-        }
-
-        for (j=this->arglist_pt->y_size - this->arglist_pt->chamber_length; j<this->arglist_pt->y_size; j++){
-                i = floor(this->lagrange_chamber(i*this->arglist_pt->space_step));
-                if (this->is_in_x_range(i)) {
-                        this->mesh_grid_1[i][j].is_wall = true;
-                        this->mesh_grid_2[i][j].is_wall = true;
-                }
-                else {throw "NP: impossible to draw initial profile: some points are outside the matrix";}
-        }
-}
-
-void Nozzle_Profiler::profile_lagrange()
-{
-        this->init_profile_lagrange();
-        
-        register int i;
-        for (i=0; i<this->arglist_pt->iter_number_profiler; i++){ 
-                this->one_iteration_lagrange();
-        }
-}
-
-void Nozzle_Profiler::one_iteration_lagrange()
-{
-        this->DES->solve();               
-}
-
-
 
 // fonctions segment
 
@@ -283,14 +159,14 @@ void Nozzle_Profiler::init_profile_segment()
 {
         this->UI->cout_str("NP-> initializing segment profile...");
         register int a,j,i_new, i_mem, i;
-        i_mem = this->arglist_pt->x_size - this->arglist_pt->nozzle_fitting_init_arg.segment.ordinates[0];
+        i_mem = this->arglist_pt->x_size - this->arglist_pt->nozzle_fitting_init_arg.ordinates[0];
 
-        for (a=0; a<this->arglist_pt->nozzle_fitting_init_arg.segment.nb_pts -1; a++){
-                for (j=this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[a]; j<this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[a+1];j++){
-                        i_new = this->arglist_pt->x_size - this->segment(this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[a],
-                                          this->arglist_pt->nozzle_fitting_init_arg.segment.ordinates[a],
-                                          this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[a+1],
-                                          this->arglist_pt->nozzle_fitting_init_arg.segment.ordinates[a+1],j);
+        for (a=0; a<this->arglist_pt->nozzle_fitting_init_arg.nb_pts -1; a++){
+                for (j=this->arglist_pt->nozzle_fitting_init_arg.abscisses[a]; j<this->arglist_pt->nozzle_fitting_init_arg.abscisses[a+1];j++){
+                        i_new = this->arglist_pt->x_size - this->segment(this->arglist_pt->nozzle_fitting_init_arg.abscisses[a],
+                                          this->arglist_pt->nozzle_fitting_init_arg.ordinates[a],
+                                          this->arglist_pt->nozzle_fitting_init_arg.abscisses[a+1],
+                                          this->arglist_pt->nozzle_fitting_init_arg.ordinates[a+1],j);
                         this->set_wall(i_new, j);
                         
                         if (i_new > i_mem){
@@ -308,8 +184,8 @@ void Nozzle_Profiler::init_profile_segment()
                 }
         }
 
-        j = this->arglist_pt->nozzle_fitting_init_arg.segment.abscisses[this->arglist_pt->nozzle_fitting_init_arg.segment.nb_pts -1];
-        i_new = this->arglist_pt->x_size - this->arglist_pt->nozzle_fitting_init_arg.segment.ordinates[this->arglist_pt->nozzle_fitting_init_arg.segment.nb_pts -1];
+        j = this->arglist_pt->nozzle_fitting_init_arg.abscisses[this->arglist_pt->nozzle_fitting_init_arg.nb_pts -1];
+        i_new = this->arglist_pt->x_size - this->arglist_pt->nozzle_fitting_init_arg.ordinates[this->arglist_pt->nozzle_fitting_init_arg.nb_pts -1];
         
         this->mesh_grid_1[i][j].is_wall = true;
         this->mesh_grid_2[i][j].is_wall = true;
@@ -328,7 +204,7 @@ void Nozzle_Profiler::init_profile_segment()
 
 }
 
-void Nozzle_Profiler::profile_segment()
+void Nozzle_Profiler::profile()
 {
         this->init_profile_segment();
         register int i;
@@ -336,10 +212,12 @@ void Nozzle_Profiler::profile_segment()
                 this->UI->cout_str_no_endl("NP-> iteration nb: "); this->UI->cout_int(i);
                 this->one_iteration_segment();
         }
+        this->save_mesh_grid();
 }
 
 void Nozzle_Profiler::one_iteration_segment()
 {
         this->set_init_conditions();
-        this->DES->solve();
+        try {this->DES->solve();}
+        catch (const char * msg) {throw  *msg;}
 }

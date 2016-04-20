@@ -64,26 +64,12 @@ class Nozzle_Profiler
 
                 void set_wall(int i,int j);
                 bool is_in_x_range(int i);
-                
-                // fonctions brutal force
-
-                void init_profile_brutal_force();
-                void profile_brutal_force();
-                void one_iteration_brutal_force();
-
-
-                // fontions lagrange
-                float lagrange_chamber(float X);
-                float lagrange_nozzle(float X);
-                void init_profile_lagrange();
-                void profile_lagrange();
-                void one_iteration_lagrange();  
         
                 // fonction segment
                 int segment(int a_abs, int a_ord, int b_abs, int b_ord, int x_abs);
                 void init_profile_segment();
-                void profile_segment();
                 void one_iteration_segment();
+
         private:
                 Usr_Interface *UI;
                 Data_Mapper *DM;

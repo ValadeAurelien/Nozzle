@@ -27,6 +27,7 @@
 
 #define mesh_grid_1 (*(this->mesh_grid_pt1))
 #define mesh_grid_2 (*(this->mesh_grid_pt2))
+#define time_step this->time_steps[this->time_steps.back()]
 
 // ======== implementation ========
 
@@ -37,20 +38,219 @@ Diff_Eq_Solver::Diff_Eq_Solver(Usr_Interface *UI,Data_Mapper *DM, arglist_struct
         this->arglist_pt = arglist_pt;
         this->mesh_grid_pt1 = mesh_grid_pt1;
         this->mesh_grid_pt2 = mesh_grid_pt2;
-        vector<data_t> thrust(this->arglist_pt->iter_number_solver);
-        this->thrust = thrust;
+        this->thrust.resize( this->arglist_pt->iter_number_solver );
+        this->time_steps.resize( this->arglist_pt->iter_number_solver );
         this->threads.resize(this->arglist_pt->nb_of_threads);
-        cout << threads.size() << " " << this->arglist_pt->nb_of_threads << endl ;
+      
+        this->variables_max.pressure_loc.resize(this->arglist_pt->nb_of_threads);
+        this->variables_max.temperature_loc.resize(this->arglist_pt->nb_of_threads);
+        this->variables_max.vol_mass_loc.resize(this->arglist_pt->nb_of_threads);
+        this->variables_max.speed0_loc.resize(this->arglist_pt->nb_of_threads);
+        this->variables_max.speed1_loc.resize(this->arglist_pt->nb_of_threads);
+        this->variables_max.turb_en_loc.resize(this->arglist_pt->nb_of_threads);
+        this->variables_max.turb_dis_loc.resize(this->arglist_pt->nb_of_threads);
 }
 
+
+//Fonction qui cherche le maximum de chaque valeur sur le mesh grid
+
+void Diff_Eq_Solver::find_all_max()
+{
+    register int i, j, t, i_min, i_max, slice;
+    i_min = 1;
+    slice = (this->arglist_pt->x_size - 1)/ this->arglist_pt->nb_of_threads; // taille d'une tranche horizontale
+    i_max = i_min + slice;
+
+    for (t = 0 ; t < this->arglist_pt->nb_of_threads - 1; t++){ 
+        this->threads[t] = thread (&Diff_Eq_Solver::partial_find_all_max, this, i_min, i_max, t); // on envoie sur les coeurs
+        i_min = i_max;
+        i_max += slice;
+    }
+
+    this->threads[this->arglist_pt->nb_of_threads - 1] = 
+        thread (&Diff_Eq_Solver::partial_find_all_max, this, i_min, this->arglist_pt->x_size-1, this->arglist_pt->nb_of_threads); // le dernier se tape le rab de la division euclidienne
+
+    for (auto &thrd : this->threads) thrd.join();
+}
+
+
+void Diff_Eq_Solver::partial_find_all_max(int i_min, int i_max, int t)
+{
+    register int i,j;
+    register data_t max_p, max_t, max_v, max_s0, max_s1, max_te, max_td
+        , val_p, val_t, val_v, val_s0, val_s1, val_te, val_td;
+
+    max_p = this->get_pressure(i_min, 0);
+    max_t = this->get_temperature(i_min, 0);
+    max_v = this->get_vol_mass(i_min,0);
+    max_s0 = this->get_speed0(i_min, 0);
+    max_s1 = this->get_speed1(i_min , 0);
+    max_te = this->get_turb_en(i_min, 0);
+    max_td = this->get_turb_dis(i_min, 0);
+
+    for (i=i_min; i<i_max; i++){
+        for (j=0; j<this->arglist_pt->y_size; j++){
+            val_p = this->get_pressure(i,j);
+            if (val_p > max_p) max_p = val_p;
+
+            val_t = this->get_temperature(i,j);
+            if (val_t > max_t) max_t = val_t;
+
+            val_v = this->get_vol_mass(i,j);
+            if (val_v > max_v) max_v = val_v;
+            
+            val_s0 = this->get_speed0(i,j);
+            if (val_s0 > max_s0) max_s0 = val_s0;
+            
+            val_s1 = this->get_speed1(i,j);
+            if (val_s1 > max_s1) max_s1 = val_s1;
+            
+            val_te = this->get_turb_en(i,j);
+            if (val_te > max_te) max_te = val_te;
+
+            val_td = this->get_turb_dis(i,j);
+            if (val_td > max_td) max_td = val_td;
+        }
+    }
+
+    this->variables_max.pressure_loc[t] = max_p;
+    this->variables_max.temperature_loc[t] = max_t;
+    this->variables_max.vol_mass_loc[t] = max_v;
+    this->variables_max.speed0_loc[t] = max_s0;
+    this->variables_max.speed1_loc[t] = max_s1;
+    this->variables_max.turb_en_loc[t] = max_te;
+    this->variables_max.turb_dis_loc[t] = max_td;
+}
+
+// avoir la valeur absolu d'une variable d'une case
+
+bool is_normal(double d) {return d == d;}
+
+data_t Diff_Eq_Solver::get_pressure(int i, int j)
+{
+    if ( is_normal(mesh_grid_2[i][j].pressure)){ 
+        return abs(mesh_grid_2[i][j].pressure) ;
+    }
+    else{ 
+        this->UI->space();
+//        this->UI->cout_float(mesh_grid_2[i][j].pressure);
+        this->DM->create_datafile_from_mesh_grid(this);
+        this->DM->thrust_plotter(this); 
+        throw "DES-> nan values appeared (pressure)";
+    }
+}
+
+data_t Diff_Eq_Solver::get_temperature(int i, int j)
+{
+    if ( is_normal(mesh_grid_2[i][j].temperature) ) { 
+        return abs(mesh_grid_2[i][j].temperature) ;
+    }
+    else{        
+        this->UI->space();
+//        this->UI->cout_float(mesh_grid_2[i][j].temperature);
+        this->DM->create_datafile_from_mesh_grid(this);
+        this->DM->thrust_plotter(this); 
+        throw "DES-> nan values appeared (temperature)";
+    }
+}
+
+data_t Diff_Eq_Solver::get_vol_mass(int i, int j)
+{
+    if ( is_normal(mesh_grid_2[i][j].vol_mass) ) {
+        return abs(mesh_grid_2[i][j].vol_mass) ;
+    }
+    else{
+        this->UI->space();
+//        this->UI->cout_float(mesh_grid_2[i][j].vol_mass);
+        this->DM->create_datafile_from_mesh_grid(this); 
+        this->DM->thrust_plotter(this); 
+        throw "DES-> nan values appeared (vol_mass)";
+    }
+}
+
+data_t Diff_Eq_Solver::get_speed0(int i, int j)
+{
+    if ( is_normal(mesh_grid_2[i][j].speed[0]) ) { 
+        return abs(mesh_grid_2[i][j].speed[0]) ;
+    }
+    else{
+        this->UI->space();
+//        this->UI->cout_float(mesh_grid_2[i][j].speed[0]);
+        this->DM->create_datafile_from_mesh_grid(this);
+        this->DM->thrust_plotter(this); 
+        throw "DES-> nan values appeared (speed0)";
+    }
+}
+
+data_t Diff_Eq_Solver::get_speed1(int i, int j)
+{
+    if ( is_normal(mesh_grid_2[i][j].speed[1]) ) { 
+        return abs(mesh_grid_2[i][j].speed[1]) ;
+    }
+    else{
+        this->UI->space();
+//        this->UI->cout_float(mesh_grid_2[i][j].speed[1]);
+        this->DM->create_datafile_from_mesh_grid(this);
+        this->DM->thrust_plotter(this); 
+        throw "DES-> nan values appeared (speed1)";
+    }
+}
+
+data_t Diff_Eq_Solver::get_turb_en(int i, int j)
+{
+    if ( is_normal(mesh_grid_2[i][j].turb_en) ) { 
+        return abs(mesh_grid_2[i][j].turb_en) ;
+    }
+    else{
+        this->UI->space();
+//        this->UI->cout_float(mesh_grid_2[i][j].turb_en);
+        this->DM->create_datafile_from_mesh_grid(this);
+        this->DM->thrust_plotter(this); 
+        throw "DES-> nan values appeared (turb_en)";
+    }
+}
+
+data_t Diff_Eq_Solver::get_turb_dis(int i, int j)
+{
+    if ( is_normal(mesh_grid_2[i][j].turb_dis)) { 
+        return abs(mesh_grid_2[i][j].turb_dis);
+    }
+    else {
+        this->UI->space();
+//        this->UI->cout_float(mesh_grid_2[i][j].turb_dis);
+        this->DM->create_datafile_from_mesh_grid(this); 
+        this->DM->thrust_plotter(this); 
+        throw "DES-> nan values appeared (turb_dis)";
+    }
+}
+
+double vec_max(vector<double> * vec)
+{
+    double max ,val;
+    max = (*vec)[0];
+    register int i;
+    for (i = 0; i<=vec->size(); i++){
+        val = (*vec)[i];
+        if ( val > max ) max = val;
+    }
+    return max;
+}
+
+void Diff_Eq_Solver::calc_all_max()
+{
+    this->variables_max.pressure = vec_max(&this->variables_max.pressure_loc);
+    this->variables_max.temperature = vec_max(&this->variables_max.temperature_loc);
+    this->variables_max.vol_mass = vec_max(&this->variables_max.vol_mass_loc);
+    this->variables_max.speed0 = vec_max(&this->variables_max.speed0_loc);
+    this->variables_max.speed1 = vec_max(&this->variables_max.speed1_loc);
+    this->variables_max.turb_en = vec_max(&this->variables_max.turb_en_loc);
+    this->variables_max.turb_dis = vec_max(&this->variables_max.turb_dis_loc);
+}
+
+
 //fonction qui calcule le carré de la vitesse, le troisième argument vaut 1:mesh_grid_1 2:mesh_grid_2
-data_t Diff_Eq_Solver::speed2(int i, int j, int k) {
-        if (k==1) {
-                return(pow(mesh_grid_1[i][j].speed[0],2) + pow(mesh_grid_1[i][j].speed[1],2));
-        }
-        else {
-                return(pow(mesh_grid_2[i][j].speed[0],2) + pow(mesh_grid_2[i][j].speed[1],2));
-        }
+data_t Diff_Eq_Solver::speed2(int i, int j, mesh_grid_t * mesh_grid_pt) {
+        return(pow((*mesh_grid_pt)[i][j].speed[0],2) + pow((*mesh_grid_pt)[i][j].speed[1],2));
 }
 
 //la pression totale est rho*e+P
@@ -83,7 +283,7 @@ data_t Diff_Eq_Solver::en_tot_PG(int i, int j) {
         }
         else {
         	return(
-        	5.0/2.0*R/this->arglist_pt->mol_mass*mesh_grid_1[i][j].temperature + 1.0/2.0*speed2(i,j,1)
+        	5.0/2.0*R/this->arglist_pt->mol_mass*mesh_grid_1[i][j].temperature + 1.0/2.0*speed2(i,j,this->mesh_grid_pt1)
         	);
         }
 }
@@ -94,7 +294,7 @@ data_t Diff_Eq_Solver::en_tot_VDW(int i, int j) {
         }
         else {
         	return(
-        	5.0/2.0*R*mesh_grid_1[i][j].temperature/this->arglist_pt->mol_mass + 1.0/2.0*speed2(i,j,1) - this->arglist_pt->VDW_a_coef*mesh_grid_1[i][j].vol_mass/pow(this->arglist_pt->mol_mass,2)
+        	5.0/2.0*R*mesh_grid_1[i][j].temperature/this->arglist_pt->mol_mass + 1.0/2.0*speed2(i,j,this->mesh_grid_pt1) - this->arglist_pt->VDW_a_coef*mesh_grid_1[i][j].vol_mass/pow(this->arglist_pt->mol_mass,2)
         	);
         }
 }
@@ -777,39 +977,39 @@ bool Diff_Eq_Solver::is_in(int i, int j) {
 //les update de la masse volumique
 //en cartésiennes
 void Diff_Eq_Solver::update_vol_mass(int i, int j) {
-        mesh_grid_2[i][j].vol_mass = mesh_grid_1[i][j].vol_mass - diver_rhov_c(i,j)*this->arglist_pt->time_step;
+        mesh_grid_2[i][j].vol_mass = mesh_grid_1[i][j].vol_mass - diver_rhov_c(i,j)*time_step;
 }
 
 //en cylindriques
 void Diff_Eq_Solver::update_vol_mass_cyl(int i, int j) {
-        mesh_grid_2[i][j].vol_mass = mesh_grid_1[i][j].vol_mass-this->arglist_pt->time_step*(1.0/r(i)*deriv_r_rrhovr(i,j)+deriv_y_rhovy(i,j));
+        mesh_grid_2[i][j].vol_mass = mesh_grid_1[i][j].vol_mass-time_step*(1.0/r(i)*deriv_r_rrhovr(i,j)+deriv_y_rhovy(i,j));
 }
 
 //les deux updates de la vitesse en cartésiennes
 void Diff_Eq_Solver::update_speed_x(int i, int j) {
-	mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[0]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vx(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vx(i,j)+deriv_x_pres(i,j)-deriv_y_tauxy(i,j)-deriv_x_tauxx(i,j)));
+	mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-time_step*(mesh_grid_1[i][j].speed[0]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vx(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vx(i,j)+deriv_x_pres(i,j)-deriv_y_tauxy(i,j)-deriv_x_tauxx(i,j)));
 }
 
 void Diff_Eq_Solver::update_speed_y(int i, int j) {
-	mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[1]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vy(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vy(i,j)+deriv_y_pres(i,j)-deriv_x_tauyx(i,j)-deriv_y_tauyy(i,j)));
+	mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-time_step*(mesh_grid_1[i][j].speed[1]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vy(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vy(i,j)+deriv_y_pres(i,j)-deriv_x_tauyx(i,j)-deriv_y_tauyy(i,j)));
 }
 
 //les deux updates de la vitesse en cylindriques
 void Diff_Eq_Solver::update_speed_r_cyl(int i, int j) {
-	mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-this->arglist_pt->time_step*(-deriv_x_pres(i,j)-mesh_grid_1[i][j].speed[0]*deriv_x_rhovx(i,j)+mesh_grid_1[i][j].speed[1]*deriv_y_rhovy(i,j)));
+	mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-time_step*(-deriv_x_pres(i,j)-mesh_grid_1[i][j].speed[0]*deriv_x_rhovx(i,j)+mesh_grid_1[i][j].speed[1]*deriv_y_rhovy(i,j)));
 }
 
 void Diff_Eq_Solver::update_speed_z_cyl(int i, int j) {
-        mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-this->arglist_pt->time_step*(deriv_y_pres(i,j) - mesh_grid_1[i][j].speed[0]*deriv_x_rhovx(i,j)+mesh_grid_1[i][j].speed[1]*deriv_y_rhovy(i,j)));
+        mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-time_step*(deriv_y_pres(i,j) - mesh_grid_1[i][j].speed[0]*deriv_x_rhovx(i,j)+mesh_grid_1[i][j].speed[1]*deriv_y_rhovy(i,j)));
 }
 
 //les deux updates de la vitesse en cartésiennes (turbulentes)
 void Diff_Eq_Solver::update_speed_x_turb(int i, int j) {
-	mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[0]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vx(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vx(i,j)+deriv_x_pres(i,j)-deriv_y_tauxy_turb(i,j)-deriv_x_tauxx_turb(i,j)));
+	mesh_grid_2[i][j].speed[0] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]-time_step*(mesh_grid_1[i][j].speed[0]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vx(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vx(i,j)+deriv_x_pres(i,j)-deriv_y_tauxy_turb(i,j)-deriv_x_tauxx_turb(i,j)));
 }
 
 void Diff_Eq_Solver::update_speed_y_turb(int i, int j) {
-	mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-this->arglist_pt->time_step*(mesh_grid_1[i][j].speed[1]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vy(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vy(i,j)+deriv_y_pres(i,j)-deriv_x_tauyx_turb(i,j)-deriv_y_tauyy_turb(i,j)));
+	mesh_grid_2[i][j].speed[1] = 1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]-time_step*(mesh_grid_1[i][j].speed[1]*diver_rhov_c(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[0]*deriv_x_vy(i,j)+mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].speed[1]*deriv_y_vy(i,j)+deriv_y_pres(i,j)-deriv_x_tauyx_turb(i,j)-deriv_y_tauyy_turb(i,j)));
 }
 
 //l'update de la pression pour le gaz de Van der Waals
@@ -819,27 +1019,34 @@ void Diff_Eq_Solver::update_pres_VDW(int i, int j) {
 
 //l'update de la temperature pour le gaz de Van der Waals (cartésiennes)
 void Diff_Eq_Solver::update_temp_VDW(int i, int j) {
-        mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(this->arglist_pt->VDW_a_coef*mesh_grid_2[i][j].vol_mass/pow(this->arglist_pt->mol_mass,2)-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_VDW(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(deriv2_x_temp(i,j)+deriv2_y_temp(i,j))-deriv_x_prestotVDWvx(i,j)-deriv_y_prestotVDWvy(i,j))));
+        mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(this->arglist_pt->VDW_a_coef*mesh_grid_2[i][j].vol_mass/pow(this->arglist_pt->mol_mass,2)-1.0/2.0*speed2(i,j,this->mesh_grid_pt1)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_VDW(i,j)+time_step*(this->arglist_pt->lambda*(deriv2_x_temp(i,j)+deriv2_y_temp(i,j))-deriv_x_prestotVDWvx(i,j)-deriv_y_prestotVDWvy(i,j))));
 }
 
 //l'update de la température pour le gaz de Van der Waals (cylindriques)
 void Diff_Eq_Solver::update_temp_VDW_cyl(int i, int j) {
-        mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(this->arglist_pt->VDW_a_coef*mesh_grid_2[i][j].vol_mass/pow(this->arglist_pt->mol_mass,2)-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_VDW(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(-deriv2_x_temp(i,j)+1.0/r(i)*deriv_r_temp(i,j)+deriv2_y_temp(i,j))-1.0/r(i)*deriv_r_prestotVDWrvr(i,j)-deriv_y_prestotVDWvy(i,j))));   
+        mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(this->arglist_pt->VDW_a_coef*mesh_grid_2[i][j].vol_mass/pow(this->arglist_pt->mol_mass,2)-1.0/2.0*speed2(i,j,this->mesh_grid_pt1)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_VDW(i,j)+time_step*(this->arglist_pt->lambda*(-deriv2_x_temp(i,j)+1.0/r(i)*deriv_r_temp(i,j)+deriv2_y_temp(i,j))-1.0/r(i)*deriv_r_prestotVDWrvr(i,j)-deriv_y_prestotVDWvy(i,j))));   
 }
 
 //l'update de la température pour le gaz parfait (cartésiennes)
 void Diff_Eq_Solver::update_temp_PG(int i, int j) {
-	mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(deriv2_x_temp(i,j)+deriv2_y_temp(i,j))-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j)+diver_vtau(i,j))));
+	mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,this->mesh_grid_pt1)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+time_step*(this->arglist_pt->lambda*(deriv2_x_temp(i,j)+deriv2_y_temp(i,j))-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j)+diver_vtau(i,j))));
 }
 
 //l'update de la température pour le gaz parfait (cylindriques)
-void Diff_Eq_Solver::update_temp_PG_cyl(int i, int j) {
-	mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+this->arglist_pt->time_step*(this->arglist_pt->lambda*(-deriv2_x_temp(i,j)+1.0/r(i)*deriv_r_temp(i,j)+deriv2_y_temp(i,j))-1.0/r(i)*deriv_r_prestotPGrvr(i,j)-deriv_y_prestotPGvy(i,j))));
-}
+/* void Diff_Eq_Solver::update_temp_PG_cyl(int i, int j) {
+        mesh_grid_2[i][j].speed[0] = mesh_grid_2[k][l].speed[0];
+        mesh_grid_2[i][j].speed[1] = mesh_grid_2[k][l].speed[1];
+        mesh_grid_2[i][j].turb_en = mesh_grid_2[k][l].turb_en;
+        mesh_grid_2[i][j].turb_dis = mesh_grid_2[k][l].turb_dis;
+}*/
 
+//l'update de la température pour le gaz parfait (cylindriques)
+void Diff_Eq_Solver::update_temp_PG_cyl(int i, int j) {
+	mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,this->mesh_grid_pt1)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+time_step*(this->arglist_pt->lambda*(-deriv2_x_temp(i,j)+1.0/r(i)*deriv_r_temp(i,j)+deriv2_y_temp(i,j))-1.0/r(i)*deriv_r_prestotPGrvr(i,j)-deriv_y_prestotPGvy(i,j))));
+}
 //l'update de la température pour le gaz parfait turbulent (cartésiennes)
 void Diff_Eq_Solver::update_temp_PG_turb(int i, int j) { //mise à jour de la température gaz parfait
-        mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+this->arglist_pt->time_step*(diver_heat_flux_turb(i,j)-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j)+diver_vtau_turb(i,j))));
+        mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,this->mesh_grid_pt1)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+time_step*(diver_heat_flux_turb(i,j)-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j)+diver_vtau_turb(i,j))));
 }
 
 //l'update de la pression pour le gaz parfait
@@ -849,23 +1056,25 @@ void Diff_Eq_Solver::update_pres_PG(int i, int j) { //mise à jour de la pressio
 
 //l'update de l'énergie turbulente (cartésiennes)
 void Diff_Eq_Solver::update_k_PG_turb(int i, int j) {
-	mesh_grid_2[i][j].turb_en = 1./mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].turb_en*mesh_grid_1[i][j].vol_mass+this->arglist_pt->time_step*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*turb_stress_xy(i,j)*strain_xy(i,j)-mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_dis-diver_rhovk(i,j)+diver_mudk(i,j)));
+	mesh_grid_2[i][j].turb_en = 1./mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].turb_en*mesh_grid_1[i][j].vol_mass+time_step*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*turb_stress_xy(i,j)*strain_xy(i,j)-mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_dis-diver_rhovk(i,j)+diver_mudk(i,j)));
 }
 
 //l'update de la dissipation turbulente (cartésiennes)
 void Diff_Eq_Solver::update_epsilon_PG_turb(int i, int j) {
-	mesh_grid_2[i][j].turb_dis = 1./mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_dis+this->arglist_pt->time_step*(c_e_1*mesh_grid_1[i][j].turb_dis/mesh_grid_1[i][j].turb_en*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*turb_stress_xy(i,j)*strain_xy(i,j)) - c_e_2*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_dis,2)/mesh_grid_1[i][j].turb_en - diver_rhovepsilon(i,j) + diver_mudepsilon(i,j)));
+
+      mesh_grid_2[i][j].turb_dis = 1./mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_dis+time_step*(c_e_1*mesh_grid_1[i][j].turb_dis/mesh_grid_1[i][j].turb_en*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*turb_stress_xy(i,j)*strain_xy(i,j)) - c_e_2*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_dis,2)/mesh_grid_1[i][j].turb_en - diver_rhovepsilon(i,j) + diver_mudepsilon(i,j)));
 }
 
-//petite fonction annexe de copie de 
+//petite fonction annexe de copie de ???
 void Diff_Eq_Solver::copy_case(int i, int j, int k, int l) {
-        mesh_grid_2[i][j].vol_mass = mesh_grid_2[k][l].vol_mass;
-        mesh_grid_2[i][j].temperature = mesh_grid_2[k][l].temperature;
-        mesh_grid_2[i][j].pressure = mesh_grid_2[k][l].pressure;
-        mesh_grid_2[i][j].speed[0] = mesh_grid_2[k][l].speed[0];
-        mesh_grid_2[i][j].speed[1] = mesh_grid_2[k][l].speed[1];
-        mesh_grid_2[i][j].turb_en = mesh_grid_2[k][l].turb_en;
-        mesh_grid_2[i][j].turb_dis = mesh_grid_2[k][l].turb_dis;
+
+            mesh_grid_2[i][j].vol_mass = mesh_grid_2[k][l].vol_mass;
+            mesh_grid_2[i][j].temperature = mesh_grid_2[k][l].temperature;
+            mesh_grid_2[i][j].pressure = mesh_grid_2[k][l].pressure;
+            mesh_grid_2[i][j].speed[0] = mesh_grid_2[k][l].speed[0];
+            mesh_grid_2[i][j].speed[1] = mesh_grid_2[k][l].speed[1];
+            mesh_grid_2[i][j].turb_en = mesh_grid_2[k][l].turb_en;
+            mesh_grid_2[i][j].turb_dis = mesh_grid_2[k][l].turb_dis;
 }
 
 //petite fonction annexe de calcul de la poussée sur un mesh_grid (intégrale de v_y sur le mur de gauche)
@@ -910,6 +1119,21 @@ void Diff_Eq_Solver::calc_iteration_PG_cart() {
    	this->exchange_mesh_grid_pts();
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //calcule une itération temporelle des équations différentielles (gaz parfait, cartésiennes, turbulentes)
 
 void Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb(int i_min, int i_max, int thread_id)
@@ -930,11 +1154,15 @@ void Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb(int i_min, int i_max, i
     }
 }
 
+
+
+
+
 void Diff_Eq_Solver::calc_iteration_PG_cart_turb() {
     // on découpe la matrice en bandes horizontales -> chaque calcul part sur un coeur
     register int i, j, t, i_min, i_max, slice;
     i_min = 1;
-    slice = this->arglist_pt->x_size / this->arglist_pt->nb_of_threads; // taille d'une tranche horizontale
+    slice = (this->arglist_pt->x_size - 1)/ this->arglist_pt->nb_of_threads; // taille d'une tranche horizontale
     i_max = i_min + slice;
 
     for (t = 0 ; t < this->arglist_pt->nb_of_threads - 1; t++){ 
@@ -944,10 +1172,10 @@ void Diff_Eq_Solver::calc_iteration_PG_cart_turb() {
     }
 
     this->threads[this->arglist_pt->nb_of_threads - 1] = 
-        thread (&Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb, this, i_min, this->arglist_pt->x_size, this->arglist_pt->nb_of_threads); // le dernier se tape le rab de la division euclidienne
+        thread (&Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb, this, i_min, this->arglist_pt->x_size-1, this->arglist_pt->nb_of_threads); // le dernier se tape le rab de la division euclidienne
 
     for (auto &thrd : this->threads) thrd.join(); // <----- ca plante la bordel de merde !!!!!!
-                                                                                                                                              
+
     
     for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
            	copy_case(i,0,i,1);
@@ -956,8 +1184,25 @@ void Diff_Eq_Solver::calc_iteration_PG_cart_turb() {
            	copy_case(0,j,1,j);
            	copy_case(this->arglist_pt->x_size-1,j,this->arglist_pt->x_size-2,j);
    	}
-   	this->exchange_mesh_grid_pts();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //calcule une itération temporelle des équations différentielles (gaz parfait, cylindriques)
 void Diff_Eq_Solver::calc_iteration_PG_cyl() {
@@ -1038,17 +1283,29 @@ void Diff_Eq_Solver::solve_PG_cart() {
         	this->calc_iteration_PG_cart();
    		this->thrust[i] = save_thrust();
         }
-        this->DM->thrust_plotter(&(this->thrust));
+        this->DM->thrust_plotter(this);
 }
 
 //lance l'itération de toutes les étapes du diff_eq_solver (gaz parfait, cartésiennes, turbulent)
 void Diff_Eq_Solver::solve_PG_cart_turb() {
         register int i;
+        register double t_step;
+        this->UI->start_DES_chrono();
         for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
         	this->calc_iteration_PG_cart_turb();
+          this->find_all_max();
+          this->calc_all_max();
+          t_step = ( this->arglist_pt->space_step /
+                     ( (pow(this->variables_max.speed0,2) + pow(this->variables_max.speed1, 2) ) 
+                       * this->arglist_pt->CFL_cond) );
+          if ( t_step > this->arglist_pt->init_time_step ) t_step = this->arglist_pt->init_time_step;
+          this->time_steps[i] = t_step;  
         	this->thrust[i] = save_thrust();
+          this->exchange_mesh_grid_pts();
+          this->UI->refresh_DES_progress(i, this->arglist_pt->iter_number_solver);
         }
-        this->DM->thrust_plotter(&(this->thrust));
+        this->UI->space();
+        this->DM->thrust_plotter(this);
 }
 
 //lance l'itération de toutes les étapes du diff_eq_solver (gaz de Van der Waals, cartésiennes)
@@ -1058,7 +1315,7 @@ void Diff_Eq_Solver::solve_VDW_cart() {
         	this->calc_iteration_VDW_cart();
         	this->thrust[i] = save_thrust();
         }
-        this->DM->thrust_plotter(&(this->thrust));
+        this->DM->thrust_plotter(this);
 }
 
 //lance l'itération de toutes les étapes du diff_eq_solver (gaz parfait, cylindriques)
@@ -1068,7 +1325,7 @@ void Diff_Eq_Solver::solve_PG_cyl() {
         	this->calc_iteration_PG_cyl();
         	this->thrust[i] = save_thrust();
         }
-        this->DM->thrust_plotter(&(this->thrust));
+        this->DM->thrust_plotter(this);
 }
 
 //lance l'itération de toutes les étapes du diff_eq_solver (gaz de Van der Waals, cylindriques)
@@ -1078,7 +1335,7 @@ void Diff_Eq_Solver::solve_VDW_cyl() {
         	this->calc_iteration_VDW_cyl();
         	this->thrust[i] = save_thrust();
         }
-        this->DM->thrust_plotter(&(this->thrust));
+        this->DM->thrust_plotter(this);
 }
 
 //Lance le bon solveur selon l'argument diff_eq_solver_algo de l'argfile

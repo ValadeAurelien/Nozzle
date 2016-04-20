@@ -54,55 +54,25 @@ struct init_conditions_struct {
         float atmosphere_turb_dis;
 };
 
-struct brutal_force_init_arg_struct {
-        int i;
-};
-
-struct lagrange_init_arg_struct {
-        int nb_pts_chamber;
-        int nb_pts_nozzle;
-        vector<float> abscisses_chamber;
-        vector<float> ordinates_chamber;
-        vector<float> abscisses_nozzle;
-        vector<float> ordinates_nozzle;
-        
-        lagrange_init_arg_struct() {}
-        ~lagrange_init_arg_struct() {}
-};
-
-struct segment_init_arg_struct {
+struct nozzle_fitting_init_arg_struct {
         int nb_pts;
         vector<int> abscisses;
         vector<int> ordinates;
-
-        segment_init_arg_struct() {}
-        ~segment_init_arg_struct() {}
-};
-
-
-union nozzle_fitting_init_arg_union {
-        brutal_force_init_arg_struct brutal_force;
-        lagrange_init_arg_struct lagrange;
-        segment_init_arg_struct segment;
-
-        nozzle_fitting_init_arg_union() {}
-        ~nozzle_fitting_init_arg_union() {}
 };
 
 struct arglist_struct {
         unsigned int x_size; //le nombre de cases suivant x
         unsigned int y_size; //le nombre de cases suivant y
-        unsigned int chamber_length; //longueur de la chamber
-        unsigned int nozzle_length; //longueur de la tuyère
         unsigned int iter_number_solver; //le nombre d'itérations du solver d'eq_diff
         unsigned int iter_number_profiler; //le nombre d'itérations du profiler
         unsigned int nb_of_threads; //nb de threads alloués au programme
 
-        float time_step; //le pas de temps, qui sera utilisé par eq_diff
-        float space_step; // pas d'espace
+        double init_time_step; //le pas de temps, qui sera utilisé par eq_diff
+        double space_step; // pas d'espace
+        double CFL_cond; //rapport pas de temps/ espace et vitesse max
 
         nozzle_fitting_algo_en nozzle_fitting_algo; //profil d'initialisation de la tuyère, qui sera utilisé par le profiler
-        nozzle_fitting_init_arg_union nozzle_fitting_init_arg; // arguments nécéssaires à l'initialisation de l'aglo de fitting
+        nozzle_fitting_init_arg_struct nozzle_fitting_init_arg; // arguments nécéssaires à l'initialisation de l'aglo de fitting
 
         diff_eq_solver_algo_en diff_eq_solver_algo; //type de solveur pour le solveur d'equation différentielle
 
@@ -116,9 +86,6 @@ struct arglist_struct {
         float dyn_visc; //la viscosité dynamique, au cas où on décide de l'utiliser finalement
 
         init_conditions_struct init_cond; //les conditions initiales
-
-        arglist_struct() {}
-        ~arglist_struct() {}
 };
 
 
