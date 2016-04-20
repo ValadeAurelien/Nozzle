@@ -625,7 +625,7 @@ data_t Diff_Eq_Solver::deriv_y_vtauy(int i, int j) {
 //définition de la viscosité turbulente
 data_t Diff_Eq_Solver::mu_t(int i, int j) {
 	if (not(mesh_grid_1[i][j].is_wall)) {
-	return( c_mu*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_en,2)/mesh_grid_1[i][j].turb_dis);
+	return( c_mu*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_en,2)/mesh_grid_1[i][j].turb_dis*exp(-3.4/pow(1.0+0.02*Ret(i,j),2)));
 	}
 	else { return(0); }
 }
@@ -634,6 +634,13 @@ data_t Diff_Eq_Solver::mu_t(int i, int j) {
 data_t Diff_Eq_Solver::lambda_t(int i, int j) {
 	return(
 	5.0/2.0*R/this->arglist_pt->mol_mass*mu_t(i,j)/sig_t
+	);
+}
+
+//définition du nombre de Reynolds turbulent
+data_t Diff_Eq_Solver::Ret(int i, int j) {
+	return(
+	mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_en,2)/mu_t(i,j)/mesh_grid_1[i][j].turb_dis
 	);
 }
 
@@ -1062,7 +1069,7 @@ void Diff_Eq_Solver::update_k_PG_turb(int i, int j) {
 //l'update de la dissipation turbulente (cartésiennes)
 void Diff_Eq_Solver::update_epsilon_PG_turb(int i, int j) {
 
-      mesh_grid_2[i][j].turb_dis = 1./mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_dis+time_step*(c_e_1*mesh_grid_1[i][j].turb_dis/mesh_grid_1[i][j].turb_en*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*turb_stress_xy(i,j)*strain_xy(i,j)) - c_e_2*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_dis,2)/mesh_grid_1[i][j].turb_en - diver_rhovepsilon(i,j) + diver_mudepsilon(i,j)));
+      mesh_grid_2[i][j].turb_dis = 1./mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_dis+time_step*(c_e_1*mesh_grid_1[i][j].turb_dis/mesh_grid_1[i][j].turb_en*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*turb_stress_xy(i,j)*strain_xy(i,j)) - c_e_2*(1-0.3*exp(-pow(Ret(i,j),2)))*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_dis,2)/mesh_grid_1[i][j].turb_en - diver_rhovepsilon(i,j) + diver_mudepsilon(i,j)));
 }
 
 //petite fonction annexe de copie de ???
