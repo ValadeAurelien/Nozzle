@@ -148,7 +148,7 @@ bool Nozzle_Profiler::is_in_x_range(int i)
 // fonctions segment
 
 
-int Nozzle_Profiler::segment(int a_abs, int a_ord, int b_abs, int b_ord, int x_abs)
+int segment(int a_abs, int a_ord, int b_abs, int b_ord, int x_abs)
 {
         float x_ord = (float)(a_ord*(b_abs-x_abs) + b_ord*(x_abs-a_abs))/(b_abs-a_abs);
         return floor(x_ord);
@@ -163,7 +163,7 @@ void Nozzle_Profiler::init_profile_segment()
 
         for (a=0; a<this->arglist_pt->nozzle_fitting_init_arg.nb_pts -1; a++){
                 for (j=this->arglist_pt->nozzle_fitting_init_arg.abscisses[a]; j<this->arglist_pt->nozzle_fitting_init_arg.abscisses[a+1];j++){
-                        i_new = this->arglist_pt->x_size - this->segment(this->arglist_pt->nozzle_fitting_init_arg.abscisses[a],
+                        i_new = this->arglist_pt->x_size - segment(this->arglist_pt->nozzle_fitting_init_arg.abscisses[a],
                                           this->arglist_pt->nozzle_fitting_init_arg.ordinates[a],
                                           this->arglist_pt->nozzle_fitting_init_arg.abscisses[a+1],
                                           this->arglist_pt->nozzle_fitting_init_arg.ordinates[a+1],j);
@@ -187,8 +187,8 @@ void Nozzle_Profiler::init_profile_segment()
         j = this->arglist_pt->nozzle_fitting_init_arg.abscisses[this->arglist_pt->nozzle_fitting_init_arg.nb_pts -1];
         i_new = this->arglist_pt->x_size - this->arglist_pt->nozzle_fitting_init_arg.ordinates[this->arglist_pt->nozzle_fitting_init_arg.nb_pts -1];
         
-        this->mesh_grid_1[i][j].is_wall = true;
-        this->mesh_grid_2[i][j].is_wall = true;
+        this->set_wall(i_new,j);
+        this->set_wall(i_new,j);
 
         if (i_new > i_mem){
                 for (i=i_new; i>i_mem; i--){
@@ -204,9 +204,16 @@ void Nozzle_Profiler::init_profile_segment()
 
 }
 
+void Nozzle_Profiler::constante()
+{
+        register i;
+        for (i=this->arglist_pt->y_size/2; i<this->arglist_pt->y_size; i++) this->set_wall(this->arglist_pt->x_size,i);
+}
+
 void Nozzle_Profiler::profile()
 {
-        this->init_profile_segment();
+        //this->init_profile_segment();
+        this->init_constante();
         register int i;
         for (i=0; i<this->arglist_pt->iter_number_profiler; i++){
                 this->UI->cout_str_no_endl("NP-> iteration nb: "); this->UI->cout_int(i);

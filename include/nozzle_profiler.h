@@ -66,10 +66,12 @@ class Nozzle_Profiler
                 bool is_in_x_range(int i);
         
                 // fonction segment
-                int segment(int a_abs, int a_ord, int b_abs, int b_ord, int x_abs);
                 void init_profile_segment();
                 void one_iteration_segment();
 
+                // debug
+
+                void constante();
         private:
                 Usr_Interface *UI;
                 Data_Mapper *DM;
