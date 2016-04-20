@@ -639,9 +639,14 @@ data_t Diff_Eq_Solver::lambda_t(int i, int j) {
 
 //définition du nombre de Reynolds turbulent
 data_t Diff_Eq_Solver::Ret(int i, int j) {
+	if (not(mesh_grid_1[i][j].is_wall) && is_in(i,j)) {
 	return(
 	mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_en,2)/mu_t(i,j)/mesh_grid_1[i][j].turb_dis
 	);
+	}
+	else {
+		return(0);
+	}
 }
 
 //définition du flux de chaleur turbulent (en cartésiennes)
