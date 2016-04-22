@@ -25,8 +25,49 @@ Nozzle_Profiler::Nozzle_Profiler(Usr_Interface *UI, Data_Mapper *DM, arglist_str
         this->UI = UI;
         this->DM = DM;
         this->arglist_pt = arglist_pt;
-        this->DES = new Diff_Eq_Solver (UI, this->DM, arglist_pt, &(this->mesh_grid_1), &(this->mesh_grid_2));
+        this->DES = new Diff_Eq_Solver (UI, this->DM, this, arglist_pt, &(this->mesh_grid_1), &(this->mesh_grid_2));
         this->create_mesh_grids();
+}
+
+void Nozzle_Profiler::profile()
+{
+    switch ( this->arglist_pt->init_cond_type )
+    {
+        case INIT_GRAD:
+             try {this->profile_init_grad();}
+             catch (const char *err[]) {throw *err;}
+             break;
+        case EVOL_CHAMBER:
+             try {this->profile_evol_chamber();}
+             catch (const char *err[]) {throw *err;}
+             break;
+    }
+}
+
+void Nozzle_Profiler::profile_evol_chamber()
+{
+        this->init_profile_segment();
+        //this-init_profile_constant();
+        register int i;
+        for (i=0; i<this->arglist_pt->iter_number_profiler; i++){
+                this->UI->cout_str_no_endl("NP-> iteration nb: "); this->UI->cout_int(i);
+                try {this->one_iteration_evol_chamber();}
+                catch (const char *err) {throw *err;}
+        }
+        this->save_mesh_grid();
+}
+
+void Nozzle_Profiler::profile_init_grad()
+{
+        this->init_profile_segment();
+        //this-init_profile_constant();
+        register int i;
+        for (i=0; i<this->arglist_pt->iter_number_profiler; i++){
+                this->UI->cout_str_no_endl("NP-> iteration nb: "); this->UI->cout_int(i);
+                try {this->one_iteration_init_grad();}
+                catch (const char *err) {throw *err;}
+        }
+        this->save_mesh_grid();
 }
 
 
@@ -43,7 +84,7 @@ void Nozzle_Profiler::create_mesh_grids()
         }
 }
 
-void Nozzle_Profiler::set_init_conditions()
+void Nozzle_Profiler::set_init_grad()
 {
         
         float &mol_mass = this->arglist_pt->mol_mass;
@@ -126,6 +167,50 @@ void Nozzle_Profiler::set_init_conditions()
         }
 }
 
+
+void Nozzle_Profiler::set_init_cond_evol_chamber()
+{
+    register int i,j;
+    float &mol_mass = this->arglist_pt->mol_mass;
+    float &atmo_press = this->arglist_pt->init_cond.atmosphere_pressure;
+    float &atmo_temp = this->arglist_pt->init_cond.atmosphere_temp;
+    float &atmo_speed = this->arglist_pt->init_cond.atmosphere_speed;
+    float &atmo_turb_en = this->arglist_pt->init_cond.atmosphere_turb_en;
+    float &atmo_turb_dis = this->arglist_pt->init_cond.atmosphere_turb_dis;
+    float atmo_v_mass = atmo_press * mol_mass / (R * atmo_temp);
+
+    for (j=0; j<this->arglist_pt->y_size;j++){
+            for (i=0; i<this->arglist_pt->x_size; i++){
+                    this->mesh_grid_1[i][j].pressure = atmo_press;
+                    this->mesh_grid_1[i][j].temperature = atmo_temp;  
+                    this->mesh_grid_1[i][j].vol_mass = atmo_v_mass; 
+                    this->mesh_grid_1[i][j].speed[1] = atmo_speed;
+                    this->mesh_grid_1[i][j].turb_en = atmo_turb_en;
+                    this->mesh_grid_1[i][j].turb_dis = atmo_turb_dis;
+            }
+
+    }
+
+    for (i=0; i<this->arglist_pt->x_size; i++) {
+            for (j=0; j<this->arglist_pt->y_size; j++) {
+                    if (this->mesh_grid_1[i][j].is_wall) {
+                            this->mesh_grid_1[i][j].speed[1]=0 ;
+                            this->mesh_grid_1[i][j].speed[0]=0 ;
+                            this->mesh_grid_1[i][j].turb_en=0;
+                            this->mesh_grid_1[i][j].turb_dis=0;
+                    }
+                    this->mesh_grid_2[i][j].speed[0] = this->mesh_grid_1[i][j].speed[0];
+                    this->mesh_grid_2[i][j].speed[1] = this->mesh_grid_1[i][j].speed[1];
+                    this->mesh_grid_2[i][j].temperature = this->mesh_grid_1[i][j].temperature;
+                    this->mesh_grid_2[i][j].pressure = this->mesh_grid_1[i][j].pressure;
+                    this->mesh_grid_2[i][j].vol_mass = this->mesh_grid_1[i][j].vol_mass;
+                    this->mesh_grid_2[i][j].turb_en = this->mesh_grid_1[i][j].turb_en;
+                    this->mesh_grid_2[i][j].turb_dis = this->mesh_grid_1[i][j].turb_dis;
+            }
+    }
+}
+
+
 void Nozzle_Profiler::save_mesh_grid()
 {
         this->DM->create_datafile_from_mesh_grid(this->DES);
@@ -144,8 +229,6 @@ bool Nozzle_Profiler::is_in_x_range(int i)
 {
         return (i <= this->arglist_pt->x_size and i >= 0) ;
 }
-
-// fonctions segment
 
 
 int segment(int a_abs, int a_ord, int b_abs, int b_ord, int x_abs)
@@ -204,27 +287,67 @@ void Nozzle_Profiler::init_profile_segment()
 
 }
 
-void Nozzle_Profiler::constante()
-{
-        register i;
-        for (i=this->arglist_pt->y_size/2; i<this->arglist_pt->y_size; i++) this->set_wall(this->arglist_pt->x_size,i);
-}
 
-void Nozzle_Profiler::profile()
+void Nozzle_Profiler::init_profile_constant()
 {
-        //this->init_profile_segment();
-        this->init_constante();
         register int i;
-        for (i=0; i<this->arglist_pt->iter_number_profiler; i++){
-                this->UI->cout_str_no_endl("NP-> iteration nb: "); this->UI->cout_int(i);
-                this->one_iteration_segment();
+        for (i=this->arglist_pt->y_size/2; i<this->arglist_pt->y_size; i++) {
+            this->set_wall(this->arglist_pt->x_size/2,i);
         }
-        this->save_mesh_grid();
 }
 
-void Nozzle_Profiler::one_iteration_segment()
+
+void Nozzle_Profiler::one_iteration_init_grad()
 {
-        this->set_init_conditions();
+        this->set_init_grad();
         try {this->DES->solve();}
-        catch (const char * msg) {throw  *msg;}
+        catch (const char *err[]) {throw *err;}
+}
+
+
+void Nozzle_Profiler::one_iteration_evol_chamber()
+{
+        this->set_init_cond_evol_chamber();
+        try {this->DES->solve();}
+        catch (const char *err[]) {throw *err;}
+}
+
+void Nozzle_Profiler::update_chamber_cond()
+{
+        float &mol_mass = this->arglist_pt->mol_mass;
+        float &atmo_pressure = this->arglist_pt->init_cond.atmosphere_pressure;
+        float &atmo_temperature = this->arglist_pt->init_cond.atmosphere_temp;
+        float atmo_vol_mass = atmo_pressure * mol_mass / (R * atmo_temperature);
+        float &atmo_speed = this->arglist_pt->init_cond.atmosphere_speed;
+        float &atmo_turb_en = this->arglist_pt->init_cond.atmosphere_turb_en;
+        float &atmo_turb_dis = this->arglist_pt->init_cond.atmosphere_turb_dis;
+
+        float &chbr_pressure = this->arglist_pt->init_cond.chamber_pressure;
+        float &chbr_temperature = this->arglist_pt->init_cond.chamber_temp;
+        float chbr_vol_mass = chbr_pressure * mol_mass / (R * chbr_temperature);
+        float &chbr_speed = this->arglist_pt->init_cond.chamber_speed;
+        float &chbr_turb_en = this->arglist_pt->init_cond.chamber_turb_en;
+        float &chbr_turb_dis = this->arglist_pt->init_cond.chamber_turb_dis;
+
+        register int i;
+        for (i=this->arglist_pt->x_size - 1; not (this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].is_wall); i--){
+                this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].pressure = 
+                    (chbr_pressure * this->DES->ite_count + atmo_pressure * (this->arglist_pt->iter_number_evol_chamber - this->DES->ite_count) ) 
+                    / this->arglist_pt->iter_number_evol_chamber;
+                this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].temperature = 
+                    (chbr_temperature * this->DES->ite_count + atmo_temperature * (this->arglist_pt->iter_number_evol_chamber - this->DES->ite_count) ) 
+                    / this->arglist_pt->iter_number_evol_chamber;
+                this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].vol_mass = 
+                    (chbr_vol_mass * this->DES->ite_count + atmo_vol_mass * (this->arglist_pt->iter_number_evol_chamber - this->DES->ite_count) ) 
+                    / this->arglist_pt->iter_number_evol_chamber;
+                this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].speed[1] = 
+                    (chbr_speed * this->DES->ite_count + atmo_speed * (this->arglist_pt->iter_number_evol_chamber - this->DES->ite_count) ) 
+                    / this->arglist_pt->iter_number_evol_chamber;
+                this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].turb_en = 
+                    (chbr_turb_en * this->DES->ite_count + atmo_turb_en * (this->arglist_pt->iter_number_evol_chamber - this->DES->ite_count) ) 
+                    / this->arglist_pt->iter_number_evol_chamber;
+                this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].turb_dis = 
+                    (chbr_turb_dis * this->DES->ite_count + atmo_turb_dis * (this->arglist_pt->iter_number_evol_chamber - this->DES->ite_count) ) 
+                    / this->arglist_pt->iter_number_evol_chamber;
+        }
 }

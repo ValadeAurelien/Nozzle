@@ -77,6 +77,16 @@ void Arg_Interpreter::create_argfile_from_cons(string argfile_name) {
                 file << "->ord = " << this->UI->cin_str() << endl;
         }
 
+        (this->UI)->cout_str("Choose the type of initial condition (initial_gradient=0, evoluting_chamber_conditions=1");
+        answer = (this->UI)->cin_str();
+        file << "init_cond_type = " << answer << endl;
+
+        if (answer == "1"){
+            (this->UI)->cout_str("Enter the number of iterations to reach the final chamber conditions (int)");
+            file << "iter_number_evol_chamber = " << (this->UI)->cin_str() << endl;
+
+        }
+        else {file << "iter_number_evol_chamber = " << 0 << endl;}
         
         (this->UI)->cout_str("Choose the differential equation solver algorithm (PG_cart=0,VDW_cart=1,PG_cyl=2,VDW_cyl=3,PG_cart_turb=4)");
         answer = (this->UI)->cin_str();
@@ -223,6 +233,17 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
                 try {this->arglist.nozzle_fitting_init_arg.ordinates.push_back( stoi(arg_val) );}
                 catch (...) {throw "AI: Bad ordinate value";}
         }
+
+        READ
+        if (arg_val == "0") {this->arglist.init_cond_type = INIT_GRAD;}
+        else {
+            if (arg_val == "1") {this->arglist.init_cond_type = EVOL_CHAMBER;}
+            else {throw "AI: Invalid choice of initial condition type";}
+        }
+    
+        READ
+        try {this->arglist.iter_number_evol_chamber = stoi(arg_val);}
+        catch (...) {throw "AI: Invalid a number of iteration to reach the final chamber conditions";}
 
         READ 
         if (arg_val == "0") {this->arglist.diff_eq_solver_algo = PG_cart;}

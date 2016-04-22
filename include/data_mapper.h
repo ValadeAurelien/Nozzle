@@ -17,6 +17,7 @@ using namespace std;
 
 #include <string>
 #include <vector>
+#include <fstream>
 
 // ========= obj dependencies ========
 
@@ -35,15 +36,17 @@ class Data_Mapper
         public:
                 Data_Mapper(Usr_Interface *UI, arglist_struct *arglist_pt, string argfile_name);
                 void create_directory();
+                void write_args();
                 void create_datafile_from_mesh_grid(Diff_Eq_Solver * DES);
                 void show_datafile();
-                void thrust_plotter(Diff_Eq_Solver * DES);
+                void temporal_stuff_plotter(Diff_Eq_Solver * DES);
         private:
                 const string PATH = "./datafiles/";
                 Usr_Interface *UI;
                 arglist_struct *arglist_pt;
                 string argfile_name;
                 string data_dir;
+                ofstream file;
 };
 
 

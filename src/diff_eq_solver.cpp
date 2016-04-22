@@ -13,7 +13,6 @@
 #include "data_mapper.h"
 #include "usr_interface.h"
 #include <cmath>
-#include <vector>
 #include <iostream>
 
 #define R 8.314 //constante des gaz parfaits
@@ -32,9 +31,10 @@
 // ======== implementation ========
 
 //le contruscteur : on crée un vecteur thrust qui va contenir la liste des valeurs de la poussée au cours du temps
-Diff_Eq_Solver::Diff_Eq_Solver(Usr_Interface *UI,Data_Mapper *DM, arglist_struct *arglist_pt, mesh_grid_t *mesh_grid_pt1, mesh_grid_t *mesh_grid_pt2) {
+Diff_Eq_Solver::Diff_Eq_Solver(Usr_Interface *UI,Data_Mapper *DM, Nozzle_Profiler * NP, arglist_struct *arglist_pt, mesh_grid_t *mesh_grid_pt1, mesh_grid_t *mesh_grid_pt2) {
         this->UI = UI;
         this->DM = DM;
+        this->NP = NP;
         this->arglist_pt = arglist_pt;
         this->mesh_grid_pt1 = mesh_grid_pt1;
         this->mesh_grid_pt2 = mesh_grid_pt2;
@@ -49,6 +49,14 @@ Diff_Eq_Solver::Diff_Eq_Solver(Usr_Interface *UI,Data_Mapper *DM, arglist_struct
         this->variables_max.speed1_loc.resize(this->arglist_pt->nb_of_threads);
         this->variables_max.turb_en_loc.resize(this->arglist_pt->nb_of_threads);
         this->variables_max.turb_dis_loc.resize(this->arglist_pt->nb_of_threads);
+
+        this->variables_max.pressure.resize(this->arglist_pt->iter_number_solver);
+        this->variables_max.temperature.resize(this->arglist_pt->iter_number_solver);
+        this->variables_max.vol_mass.resize(this->arglist_pt->iter_number_solver);
+        this->variables_max.speed0.resize(this->arglist_pt->iter_number_solver);
+        this->variables_max.speed1.resize(this->arglist_pt->iter_number_solver);
+        this->variables_max.turb_en.resize(this->arglist_pt->iter_number_solver);
+        this->variables_max.turb_dis.resize(this->arglist_pt->iter_number_solver);
 }
 
 
@@ -68,7 +76,7 @@ void Diff_Eq_Solver::find_all_max()
     }
 
     this->threads[this->arglist_pt->nb_of_threads - 1] = 
-        thread (&Diff_Eq_Solver::partial_find_all_max, this, i_min, this->arglist_pt->x_size-1, this->arglist_pt->nb_of_threads); // le dernier se tape le rab de la division euclidienne
+        thread (&Diff_Eq_Solver::partial_find_all_max, this, i_min, this->arglist_pt->x_size-1, this->arglist_pt->nb_of_threads-1); // le dernier se tape le rab de la division euclidienne
 
     for (auto &thrd : this->threads) thrd.join();
 }
@@ -87,6 +95,7 @@ void Diff_Eq_Solver::partial_find_all_max(int i_min, int i_max, int t)
     max_s1 = this->get_speed1(i_min , 0);
     max_te = this->get_turb_en(i_min, 0);
     max_td = this->get_turb_dis(i_min, 0);
+    
 
     for (i=i_min; i<i_max; i++){
         for (j=0; j<this->arglist_pt->y_size; j++){
@@ -134,9 +143,11 @@ data_t Diff_Eq_Solver::get_pressure(int i, int j)
     else{ 
         this->UI->space();
 //        this->UI->cout_float(mesh_grid_2[i][j].pressure);
+        this->mtx.lock();
         this->DM->create_datafile_from_mesh_grid(this);
-        this->DM->thrust_plotter(this); 
+        this->DM->temporal_stuff_plotter(this); 
         throw "DES-> nan values appeared (pressure)";
+        this->mtx.unlock();
     }
 }
 
@@ -148,9 +159,11 @@ data_t Diff_Eq_Solver::get_temperature(int i, int j)
     else{        
         this->UI->space();
 //        this->UI->cout_float(mesh_grid_2[i][j].temperature);
+        this->mtx.lock();
         this->DM->create_datafile_from_mesh_grid(this);
-        this->DM->thrust_plotter(this); 
+        this->DM->temporal_stuff_plotter(this); 
         throw "DES-> nan values appeared (temperature)";
+        this->mtx.unlock();
     }
 }
 
@@ -162,9 +175,11 @@ data_t Diff_Eq_Solver::get_vol_mass(int i, int j)
     else{
         this->UI->space();
 //        this->UI->cout_float(mesh_grid_2[i][j].vol_mass);
+        this->mtx.lock();
         this->DM->create_datafile_from_mesh_grid(this); 
-        this->DM->thrust_plotter(this); 
+        this->DM->temporal_stuff_plotter(this); 
         throw "DES-> nan values appeared (vol_mass)";
+        this->mtx.unlock();
     }
 }
 
@@ -176,9 +191,11 @@ data_t Diff_Eq_Solver::get_speed0(int i, int j)
     else{
         this->UI->space();
 //        this->UI->cout_float(mesh_grid_2[i][j].speed[0]);
+        this->mtx.lock();
         this->DM->create_datafile_from_mesh_grid(this);
-        this->DM->thrust_plotter(this); 
+        this->DM->temporal_stuff_plotter(this); 
         throw "DES-> nan values appeared (speed0)";
+        this->mtx.unlock();
     }
 }
 
@@ -190,9 +207,11 @@ data_t Diff_Eq_Solver::get_speed1(int i, int j)
     else{
         this->UI->space();
 //        this->UI->cout_float(mesh_grid_2[i][j].speed[1]);
+        this->mtx.lock();
         this->DM->create_datafile_from_mesh_grid(this);
-        this->DM->thrust_plotter(this); 
+        this->DM->temporal_stuff_plotter(this); 
         throw "DES-> nan values appeared (speed1)";
+        this->mtx.unlock();
     }
 }
 
@@ -204,9 +223,11 @@ data_t Diff_Eq_Solver::get_turb_en(int i, int j)
     else{
         this->UI->space();
 //        this->UI->cout_float(mesh_grid_2[i][j].turb_en);
+        this->mtx.lock();
         this->DM->create_datafile_from_mesh_grid(this);
-        this->DM->thrust_plotter(this); 
+        this->DM->temporal_stuff_plotter(this); 
         throw "DES-> nan values appeared (turb_en)";
+        this->mtx.unlock();
     }
 }
 
@@ -218,9 +239,11 @@ data_t Diff_Eq_Solver::get_turb_dis(int i, int j)
     else {
         this->UI->space();
 //        this->UI->cout_float(mesh_grid_2[i][j].turb_dis);
+        this->mtx.lock();
         this->DM->create_datafile_from_mesh_grid(this); 
-        this->DM->thrust_plotter(this); 
+        this->DM->temporal_stuff_plotter(this); 
         throw "DES-> nan values appeared (turb_dis)";
+        this->mtx.unlock();
     }
 }
 
@@ -229,22 +252,22 @@ double vec_max(vector<double> * vec)
     double max ,val;
     max = (*vec)[0];
     register int i;
-    for (i = 0; i<=vec->size(); i++){
+    for (i = 0; i<vec->size(); i++){
         val = (*vec)[i];
         if ( val > max ) max = val;
     }
     return max;
 }
 
-void Diff_Eq_Solver::calc_all_max()
+void Diff_Eq_Solver::calc_all_max(int i)
 {
-    this->variables_max.pressure = vec_max(&this->variables_max.pressure_loc);
-    this->variables_max.temperature = vec_max(&this->variables_max.temperature_loc);
-    this->variables_max.vol_mass = vec_max(&this->variables_max.vol_mass_loc);
-    this->variables_max.speed0 = vec_max(&this->variables_max.speed0_loc);
-    this->variables_max.speed1 = vec_max(&this->variables_max.speed1_loc);
-    this->variables_max.turb_en = vec_max(&this->variables_max.turb_en_loc);
-    this->variables_max.turb_dis = vec_max(&this->variables_max.turb_dis_loc);
+    this->variables_max.pressure[i] = vec_max(&this->variables_max.pressure_loc);
+    this->variables_max.temperature[i] = vec_max(&this->variables_max.temperature_loc);
+    this->variables_max.vol_mass[i] = vec_max(&this->variables_max.vol_mass_loc);
+    this->variables_max.speed0[i] = vec_max(&this->variables_max.speed0_loc);
+    this->variables_max.speed1[i] = vec_max(&this->variables_max.speed1_loc);
+    this->variables_max.turb_en[i] = vec_max(&this->variables_max.turb_en_loc);
+    this->variables_max.turb_dis[i] = vec_max(&this->variables_max.turb_dis_loc);
 }
 
 
@@ -1184,9 +1207,9 @@ void Diff_Eq_Solver::calc_iteration_PG_cart_turb() {
     }
 
     this->threads[this->arglist_pt->nb_of_threads - 1] = 
-        thread (&Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb, this, i_min, this->arglist_pt->x_size-1, this->arglist_pt->nb_of_threads); // le dernier se tape le rab de la division euclidienne
+        thread (&Diff_Eq_Solver::partial_calc_iteration_PG_cart_turb, this, i_min, this->arglist_pt->x_size-1, this->arglist_pt->nb_of_threads-1); // le dernier se tape le rab de la division euclidienne
 
-    for (auto &thrd : this->threads) thrd.join(); // <----- ca plante la bordel de merde !!!!!!
+    for (auto &thrd : this->threads) thrd.join(); 
 
     
     for (i = 1 ; i < this->arglist_pt->x_size-1; i++) {
@@ -1295,31 +1318,73 @@ void Diff_Eq_Solver::solve_PG_cart() {
         	this->calc_iteration_PG_cart();
    		this->thrust[i] = save_thrust();
         }
-        this->DM->thrust_plotter(this);
+        this->DM->temporal_stuff_plotter(this);
 }
 
-//lance l'itération de toutes les étapes du diff_eq_solver (gaz parfait, cartésiennes, turbulent)
-void Diff_Eq_Solver::solve_PG_cart_turb() {
-        register int i;
+//lance l'itération de toutes les étapes du diff_eq_solver (gaz parfait, cartésiennes, turbulent, gradient initial)
+void Diff_Eq_Solver::solve_PG_cart_turb_init_grad() {
         register double t_step;
         this->UI->start_DES_chrono();
-        for (i=0; i<this->arglist_pt->iter_number_solver; i++) {
-        	this->calc_iteration_PG_cart_turb();
-          this->find_all_max();
-          this->calc_all_max();
-          t_step = ( this->arglist_pt->space_step /
-                     ( (pow(this->variables_max.speed0,2) + pow(this->variables_max.speed1, 2) ) 
-                       * this->arglist_pt->CFL_cond) );
-          if ( t_step > this->arglist_pt->init_time_step ) t_step = this->arglist_pt->init_time_step;
-          this->time_steps[i] = t_step;  
-        	this->thrust[i] = save_thrust();
-          this->exchange_mesh_grid_pts();
-          this->UI->refresh_DES_progress(i, this->arglist_pt->iter_number_solver);
+
+        for (this->ite_count=0; this->ite_count < this->arglist_pt->iter_number_solver; this->ite_count++) {
+                this->calc_iteration_PG_cart_turb();
+                this->find_all_max();
+                this->calc_all_max(this->ite_count);
+                t_step = ( this->arglist_pt->space_step /
+                            ( (pow(this->variables_max.speed0[this->ite_count],2) 
+                                + pow(this->variables_max.speed1[this->ite_count], 2) ) 
+                            * this->arglist_pt->CFL_cond) );
+                if ( t_step > this->arglist_pt->init_time_step ) t_step = this->arglist_pt->init_time_step;
+                this->time_steps[this->ite_count] = t_step;  
+                this->thrust[this->ite_count] = save_thrust();
+                this->exchange_mesh_grid_pts();
+                this->UI->refresh_DES_progress(this->ite_count, this->arglist_pt->iter_number_solver);
         }
+        this->ite_count--;        
         this->UI->space();
-        this->DM->thrust_plotter(this);
+        this->DM->temporal_stuff_plotter(this);
 }
 
+//lance l'itération de toutes les étapes du diff_eq_solver (gaz parfait, cartésiennes, turbulent, conditions au fond de la chambre en évolution)
+void Diff_Eq_Solver::solve_PG_cart_turb_evol_chamber() {
+        register double t_step;
+        this->UI->start_DES_chrono();
+
+        for (this->ite_count=0; this->ite_count < this->arglist_pt->iter_number_evol_chamber; this->ite_count++) {
+                this->calc_iteration_PG_cart_turb();
+                this->NP->update_chamber_cond();
+                this->find_all_max();
+                this->calc_all_max(this->ite_count);
+                t_step = ( this->arglist_pt->space_step /
+                            ( (pow(this->variables_max.speed0[this->ite_count],2) 
+                                + pow(this->variables_max.speed1[this->ite_count], 2) ) 
+                            * this->arglist_pt->CFL_cond) );
+                if ( t_step > this->arglist_pt->init_time_step ) t_step = this->arglist_pt->init_time_step;
+                this->time_steps[this->ite_count] = t_step;  
+                this->thrust[this->ite_count] = save_thrust();
+                this->exchange_mesh_grid_pts();
+                this->UI->refresh_DES_progress(this->ite_count, this->arglist_pt->iter_number_solver);
+        }
+
+        for (this->ite_count = this->ite_count; this->ite_count < this->arglist_pt->iter_number_solver; this->ite_count++) {
+                this->calc_iteration_PG_cart_turb();
+                this->find_all_max();
+                this->calc_all_max(this->ite_count);
+                t_step = ( this->arglist_pt->space_step /
+                            ( (pow(this->variables_max.speed0[this->ite_count],2) 
+                                + pow(this->variables_max.speed1[this->ite_count], 2) ) 
+                            * this->arglist_pt->CFL_cond) );
+                if ( t_step > this->arglist_pt->init_time_step ) t_step = this->arglist_pt->init_time_step;
+                this->time_steps[this->ite_count] = t_step;  
+                this->thrust[this->ite_count] = save_thrust();
+                this->exchange_mesh_grid_pts();
+                this->UI->refresh_DES_progress(this->ite_count, this->arglist_pt->iter_number_solver);
+        }
+
+        this->ite_count--;        
+        this->UI->space();
+        this->DM->temporal_stuff_plotter(this);
+}
 //lance l'itération de toutes les étapes du diff_eq_solver (gaz de Van der Waals, cartésiennes)
 void Diff_Eq_Solver::solve_VDW_cart() {
         register int i;
@@ -1327,7 +1392,7 @@ void Diff_Eq_Solver::solve_VDW_cart() {
         	this->calc_iteration_VDW_cart();
         	this->thrust[i] = save_thrust();
         }
-        this->DM->thrust_plotter(this);
+        this->DM->temporal_stuff_plotter(this);
 }
 
 //lance l'itération de toutes les étapes du diff_eq_solver (gaz parfait, cylindriques)
@@ -1337,7 +1402,7 @@ void Diff_Eq_Solver::solve_PG_cyl() {
         	this->calc_iteration_PG_cyl();
         	this->thrust[i] = save_thrust();
         }
-        this->DM->thrust_plotter(this);
+        this->DM->temporal_stuff_plotter(this);
 }
 
 //lance l'itération de toutes les étapes du diff_eq_solver (gaz de Van der Waals, cylindriques)
@@ -1347,7 +1412,7 @@ void Diff_Eq_Solver::solve_VDW_cyl() {
         	this->calc_iteration_VDW_cyl();
         	this->thrust[i] = save_thrust();
         }
-        this->DM->thrust_plotter(this);
+        this->DM->temporal_stuff_plotter(this);
 }
 
 //Lance le bon solveur selon l'argument diff_eq_solver_algo de l'argfile
@@ -1372,7 +1437,15 @@ void Diff_Eq_Solver::solve()
                         break;
                 
                 case PG_cart_turb:
-                        this->solve_PG_cart_turb();
+                        switch (this->arglist_pt->init_cond_type)
+                        {
+                            case INIT_GRAD:
+                                this->solve_PG_cart_turb_init_grad();
+                                break;
+                            case EVOL_CHAMBER:
+                                this->solve_PG_cart_turb_evol_chamber();
+                                break;
+                        }
                         break;
 
                 default:

@@ -54,24 +54,31 @@ class Nozzle_Profiler
                 Nozzle_Profiler(Usr_Interface *UI, Data_Mapper *DM, arglist_struct *arglist_pt); //Constructeur
 
                 void profile(); //switch sur l'alfo de profilage a choisir 
-                                
+               
+                // fonctions de profilages particulieres
+
+                void profile_init_grad();
+                void profile_evol_chamber();
 
                 //fonctions internes 
 
                 void create_mesh_grids();
-                void set_init_conditions();
-                void save_mesh_grid();
+                void set_init_grad();
+                void set_init_cond_evol_chamber();
 
+                void save_mesh_grid();
                 void set_wall(int i,int j);
                 bool is_in_x_range(int i);
         
-                // fonction segment
+                // fonctions d'initialisation des profiles
                 void init_profile_segment();
-                void one_iteration_segment();
+                void init_profile_constant();
 
-                // debug
+                // fonctions de mise en place des conditons "initiales"
+                void one_iteration_init_grad();
+                void one_iteration_evol_chamber();
+                void update_chamber_cond();
 
-                void constante();
         private:
                 Usr_Interface *UI;
                 Data_Mapper *DM;
@@ -79,7 +86,6 @@ class Nozzle_Profiler
                 arglist_struct *arglist_pt;
                 mesh_grid_t mesh_grid_1;
                 mesh_grid_t mesh_grid_2;
-                //mesh_grid_t<data_t> *mesh_grid;
 };
 
 

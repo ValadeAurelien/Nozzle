@@ -31,7 +31,8 @@ using namespace std;
 // enums
 
 enum gaz_type_en {PG=0, VDW=1}; //liste des gazs possibles, on assigne un entier en plus pour pouvoir des switch si on ajoute d'autres types de gaz
-enum nozzle_fitting_algo_en {LAGRANGE=0, BRUTAL_FORCE=1, SEGMENT=2}; // liste des choix de fiitting possible pour la tuyère. Utilisé dans nozzle_profiler.h
+//enum nozzle_fitting_algo_en {LAGRANGE=0, BRUTAL_FORCE=1, SEGMENT=2}; // liste des choix de fiitting possible pour la tuyère. Utilisé dans nozzle_profiler.h
+enum init_cond_type_en {INIT_GRAD=0, EVOL_CHAMBER=1}; // gradient initial ou evolution des conditions au fond de la chambre
 enum diff_eq_solver_algo_en {PG_cart=0, VDW_cart=1, PG_cyl=2, VDW_cyl=3, PG_cart_turb=4};
 
 
@@ -71,8 +72,11 @@ struct arglist_struct {
         double space_step; // pas d'espace
         double CFL_cond; //rapport pas de temps/ espace et vitesse max
 
-        nozzle_fitting_algo_en nozzle_fitting_algo; //profil d'initialisation de la tuyère, qui sera utilisé par le profiler
+//        nozzle_fitting_algo_en nozzle_fitting_algo; //profil d'initialisation de la tuyère, qui sera utilisé par le profiler
         nozzle_fitting_init_arg_struct nozzle_fitting_init_arg; // arguments nécéssaires à l'initialisation de l'aglo de fitting
+
+        init_cond_type_en init_cond_type; // la forme des conditions initiales (gradient ou evolution de la chmabre)
+        unsigned int iter_number_evol_chamber;  // nb d'itérations pour mettre les conditions dans la chambre a la valeur donnée
 
         diff_eq_solver_algo_en diff_eq_solver_algo; //type de solveur pour le solveur d'equation différentielle
 
