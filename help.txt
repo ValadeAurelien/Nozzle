@@ -21,5 +21,7 @@ pour quitter: ne pas non plus etre en mode insertion puis :q
 
 au début c'est chiant tkt ! ;)
 
+plot "final_prof_meshgrid.data" u 2:(-$1):($8/1000):($7/1000) with vectors head filled lt 2
+
 
 splot "segment1.data" u 2:(-$1):7, "segment1.data" u 2:( $3==1 ? (-$1) : 1/0 ):(0.0) with points linecolor rgb "white"
