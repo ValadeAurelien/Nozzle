@@ -199,7 +199,7 @@ class Diff_Eq_Solver
                 data_t get_speed1(int i, int j);
                 data_t get_turb_en(int i, int j);
                 data_t get_turb_dis(int i, int j);
-                void calc_all_max(int i);
+                void calc_all_max();
 
                 // attributs partagés
 

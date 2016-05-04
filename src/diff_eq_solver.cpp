@@ -76,7 +76,7 @@ void Diff_Eq_Solver::find_all_max()
     }
 
     this->threads[this->arglist_pt->nb_of_threads - 1] = 
-        thread (&Diff_Eq_Solver::partial_find_all_max, this, i_min, this->arglist_pt->x_size-1, this->arglist_pt->nb_of_threads-1); // le dernier se tape le rab de la division euclidienne
+        thread (&Diff_Eq_Solver::partial_find_all_max, this, i_min, this->arglist_pt->x_size, this->arglist_pt->nb_of_threads-1); // le dernier se tape le rab de la division euclidienne
 
     for (auto &thrd : this->threads) thrd.join();
 }
@@ -259,15 +259,15 @@ double vec_max(vector<data_t> * vec)
     return max;
 }
 
-void Diff_Eq_Solver::calc_all_max(int i)
+void Diff_Eq_Solver::calc_all_max()
 {
-    this->variables_max.pressure[i] = vec_max(&this->variables_max.pressure_loc);
-    this->variables_max.temperature[i] = vec_max(&this->variables_max.temperature_loc);
-    this->variables_max.vol_mass[i] = vec_max(&this->variables_max.vol_mass_loc);
-    this->variables_max.speed0[i] = vec_max(&this->variables_max.speed0_loc);
-    this->variables_max.speed1[i] = vec_max(&this->variables_max.speed1_loc);
-    this->variables_max.turb_en[i] = vec_max(&this->variables_max.turb_en_loc);
-    this->variables_max.turb_dis[i] = vec_max(&this->variables_max.turb_dis_loc);
+    this->variables_max.pressure[this->ite_count] = vec_max(&this->variables_max.pressure_loc);
+    this->variables_max.temperature[this->ite_count] = vec_max(&this->variables_max.temperature_loc);
+    this->variables_max.vol_mass[this->ite_count] = vec_max(&this->variables_max.vol_mass_loc);
+    this->variables_max.speed0[this->ite_count] = vec_max(&this->variables_max.speed0_loc);
+    this->variables_max.speed1[this->ite_count] = vec_max(&this->variables_max.speed1_loc);
+    this->variables_max.turb_en[this->ite_count] = vec_max(&this->variables_max.turb_en_loc);
+    this->variables_max.turb_dis[this->ite_count] = vec_max(&this->variables_max.turb_dis_loc);
 }
 
 
@@ -1328,7 +1328,7 @@ void Diff_Eq_Solver::solve_PG_cart_turb_init_grad() {
         for (this->ite_count=0; this->ite_count < this->arglist_pt->iter_number_solver; this->ite_count++) {
                 this->calc_iteration_PG_cart_turb();
                 this->find_all_max();
-                this->calc_all_max(this->ite_count);
+                this->calc_all_max();
                 t_step = sqrt( this->arglist_pt->space_step /
                             ( (pow(this->variables_max.speed0[this->ite_count],2) 
                                 + pow(this->variables_max.speed1[this->ite_count], 2) ) 
@@ -1351,11 +1351,11 @@ void Diff_Eq_Solver::solve_PG_cart_turb_evol_chamber() {
 
         for (this->ite_count=0; this->ite_count < this->arglist_pt->iter_number_evol_chamber; this->ite_count++) {
                 this->calc_iteration_PG_cart_turb();
-                this->NP->update_chamber_cond();
                 this->find_all_max();
-                this->calc_all_max(this->ite_count);
-                t_step = sqrt( this->arglist_pt->space_step /
-                            ( (pow(this->variables_max.speed0[this->ite_count],2) 
+                this->NP->update_chamber_cond();
+                this->calc_all_max();
+                t_step = ( this->arglist_pt->space_step /
+                            ( sqrt(pow(this->variables_max.speed0[this->ite_count],2) 
                                 + pow(this->variables_max.speed1[this->ite_count], 2) ) 
                             * this->arglist_pt->CFL_cond) );
                 if ( t_step > this->arglist_pt->init_time_step ) t_step = this->arglist_pt->init_time_step;
@@ -1368,9 +1368,9 @@ void Diff_Eq_Solver::solve_PG_cart_turb_evol_chamber() {
         for (this->ite_count = this->ite_count; this->ite_count < this->arglist_pt->iter_number_solver; this->ite_count++) {
                 this->calc_iteration_PG_cart_turb();
                 this->find_all_max();
-                this->calc_all_max(this->ite_count);
-                t_step = sqrt( this->arglist_pt->space_step /
-                            ( (pow(this->variables_max.speed0[this->ite_count],2) 
+                this->calc_all_max();
+                t_step = ( this->arglist_pt->space_step /
+                            ( sqrt(pow(this->variables_max.speed0[this->ite_count],2) 
                                 + pow(this->variables_max.speed1[this->ite_count], 2) ) 
                             * this->arglist_pt->CFL_cond) );
                 if ( t_step > this->arglist_pt->init_time_step ) t_step = this->arglist_pt->init_time_step;
