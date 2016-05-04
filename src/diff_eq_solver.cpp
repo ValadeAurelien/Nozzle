@@ -133,7 +133,7 @@ void Diff_Eq_Solver::partial_find_all_max(int i_min, int i_max, int t)
 
 // avoir la valeur absolu d'une variable d'une case
 
-bool is_normal(double d) {return d == d;}
+bool is_normal(data_t d) {return d == d;}
 
 data_t Diff_Eq_Solver::get_pressure(int i, int j)
 {
@@ -247,7 +247,7 @@ data_t Diff_Eq_Solver::get_turb_dis(int i, int j)
     }
 }
 
-double vec_max(vector<double> * vec)
+double vec_max(vector<data_t> * vec)
 {
     double max ,val;
     max = (*vec)[0];
@@ -1330,7 +1330,7 @@ void Diff_Eq_Solver::solve_PG_cart_turb_init_grad() {
                 this->calc_iteration_PG_cart_turb();
                 this->find_all_max();
                 this->calc_all_max(this->ite_count);
-                t_step = ( this->arglist_pt->space_step /
+                t_step = sqrt( this->arglist_pt->space_step /
                             ( (pow(this->variables_max.speed0[this->ite_count],2) 
                                 + pow(this->variables_max.speed1[this->ite_count], 2) ) 
                             * this->arglist_pt->CFL_cond) );
@@ -1355,7 +1355,7 @@ void Diff_Eq_Solver::solve_PG_cart_turb_evol_chamber() {
                 this->NP->update_chamber_cond();
                 this->find_all_max();
                 this->calc_all_max(this->ite_count);
-                t_step = ( this->arglist_pt->space_step /
+                t_step = sqrt( this->arglist_pt->space_step /
                             ( (pow(this->variables_max.speed0[this->ite_count],2) 
                                 + pow(this->variables_max.speed1[this->ite_count], 2) ) 
                             * this->arglist_pt->CFL_cond) );
@@ -1370,7 +1370,7 @@ void Diff_Eq_Solver::solve_PG_cart_turb_evol_chamber() {
                 this->calc_iteration_PG_cart_turb();
                 this->find_all_max();
                 this->calc_all_max(this->ite_count);
-                t_step = ( this->arglist_pt->space_step /
+                t_step = sqrt( this->arglist_pt->space_step /
                             ( (pow(this->variables_max.speed0[this->ite_count],2) 
                                 + pow(this->variables_max.speed1[this->ite_count], 2) ) 
                             * this->arglist_pt->CFL_cond) );

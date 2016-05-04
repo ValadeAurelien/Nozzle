@@ -26,7 +26,7 @@ using namespace std;
 // ======== structs ========
 
 
-typedef double data_t;
+typedef long double data_t;
 
 // template <typename data_t>; //creation du template mesh sur la base d'un data_type float, double, long double
 struct mesh_struct{

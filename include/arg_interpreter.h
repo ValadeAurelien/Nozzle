@@ -37,22 +37,23 @@ enum diff_eq_solver_algo_en {PG_cart=0, VDW_cart=1, PG_cyl=2, VDW_cyl=3, PG_cart
 
 
 // structures et unions
+typedef long double data_t;
 
 struct init_conditions_struct {
-        float chamber_pressure;
-        float atmosphere_pressure;
+        data_t chamber_pressure;
+        data_t atmosphere_pressure;
         
-        float chamber_temp;
-        float atmosphere_temp;
+        data_t chamber_temp;
+        data_t atmosphere_temp;
 
-        float chamber_speed;
-        float atmosphere_speed;
+        data_t chamber_speed;
+        data_t atmosphere_speed;
         
-        float chamber_turb_en;
-        float atmosphere_turb_en;
+        data_t chamber_turb_en;
+        data_t atmosphere_turb_en;
 
-        float chamber_turb_dis;
-        float atmosphere_turb_dis;
+        data_t chamber_turb_dis;
+        data_t atmosphere_turb_dis;
 };
 
 struct nozzle_fitting_init_arg_struct {
@@ -68,9 +69,9 @@ struct arglist_struct {
         unsigned int iter_number_profiler; //le nombre d'itérations du profiler
         unsigned int nb_of_threads; //nb de threads alloués au programme
 
-        double init_time_step; //le pas de temps, qui sera utilisé par eq_diff
-        double space_step; // pas d'espace
-        double CFL_cond; //rapport pas de temps/ espace et vitesse max
+        data_t init_time_step; //le pas de temps, qui sera utilisé par eq_diff
+        data_t space_step; // pas d'espace
+        data_t CFL_cond; //rapport pas de temps/ espace et vitesse max
 
 //        nozzle_fitting_algo_en nozzle_fitting_algo; //profil d'initialisation de la tuyère, qui sera utilisé par le profiler
         nozzle_fitting_init_arg_struct nozzle_fitting_init_arg; // arguments nécéssaires à l'initialisation de l'aglo de fitting
@@ -81,13 +82,13 @@ struct arglist_struct {
         diff_eq_solver_algo_en diff_eq_solver_algo; //type de solveur pour le solveur d'equation différentielle
 
         bool thermal_conduction; //vaudra true ou false selon le modèle ?
-        float lambda; //la conductivité thermique (qui pourra être utile selon le modèle ?
+        data_t lambda; //la conductivité thermique (qui pourra être utile selon le modèle ?
 	
         gaz_type_en gaz_type; //vaudra "GP" ou "VDW" selon le type de gaz choisi
-        float VDW_a_coef; //le premier coef de Van der Waals
-        float VDW_b_coef; //le deuxième coef de Van der Waals
-        float mol_mass; //la masse molaire du gaz, utilisée dans l'équation d'état
-        float dyn_visc; //la viscosité dynamique, au cas où on décide de l'utiliser finalement
+        data_t VDW_a_coef; //le premier coef de Van der Waals
+        data_t VDW_b_coef; //le deuxième coef de Van der Waals
+        data_t mol_mass; //la masse molaire du gaz, utilisée dans l'équation d'état
+        data_t dyn_visc; //la viscosité dynamique, au cas où on décide de l'utiliser finalement
 
         init_conditions_struct init_cond; //les conditions initiales
 };

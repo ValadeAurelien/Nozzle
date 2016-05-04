@@ -244,6 +244,10 @@ void Arg_Interpreter::fill_arglist_from_argfile(string argfile_name) {
         READ
         try {this->arglist.iter_number_evol_chamber = stoi(arg_val);}
         catch (...) {throw "AI: Invalid a number of iteration to reach the final chamber conditions";}
+        if (this->arglist.iter_number_evol_chamber + 2 >= this->arglist.iter_number_solver) {
+            throw "AI: Number of iteration to reach the final chamber conditions must be strictly inferior to the number of iteration of the solver minus o,e";
+        }
+
 
         READ 
         if (arg_val == "0") {this->arglist.diff_eq_solver_algo = PG_cart;}

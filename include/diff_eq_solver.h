@@ -26,7 +26,7 @@ class Nozzle_Profiler;
 struct arglist_struct;
 struct mesh_struct;
 typedef vector<vector<mesh_struct>> mesh_grid_t;
-typedef double data_t; 
+typedef long double data_t; 
 
 // ======== interface ========
 

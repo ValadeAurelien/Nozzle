@@ -87,19 +87,19 @@ void Nozzle_Profiler::create_mesh_grids()
 void Nozzle_Profiler::set_init_grad()
 {
         
-        float &mol_mass = this->arglist_pt->mol_mass;
-        float &atmo_press = this->arglist_pt->init_cond.atmosphere_pressure;
-        float &atmo_temp = this->arglist_pt->init_cond.atmosphere_temp;
-        float &atmo_speed = this->arglist_pt->init_cond.atmosphere_speed;
-        float &atmo_turb_en = this->arglist_pt->init_cond.atmosphere_turb_en;
-        float &atmo_turb_dis = this->arglist_pt->init_cond.atmosphere_turb_dis;
-        float atmo_v_mass = atmo_press * mol_mass / (R * atmo_temp);
+        data_t &mol_mass = this->arglist_pt->mol_mass;
+        data_t &atmo_press = this->arglist_pt->init_cond.atmosphere_pressure;
+        data_t &atmo_temp = this->arglist_pt->init_cond.atmosphere_temp;
+        data_t &atmo_speed = this->arglist_pt->init_cond.atmosphere_speed;
+        data_t &atmo_turb_en = this->arglist_pt->init_cond.atmosphere_turb_en;
+        data_t &atmo_turb_dis = this->arglist_pt->init_cond.atmosphere_turb_dis;
+        data_t atmo_v_mass = atmo_press * mol_mass / (R * atmo_temp);
 
-        float &chbr_press = this->arglist_pt->init_cond.chamber_pressure;
-        float &chbr_temp = this->arglist_pt->init_cond.chamber_temp;
-        float &chbr_speed = this->arglist_pt->init_cond.chamber_speed;
-        float &chbr_turb_en = this->arglist_pt->init_cond.chamber_turb_en;
-        float &chbr_turb_dis = this->arglist_pt->init_cond.chamber_turb_dis;
+        data_t &chbr_press = this->arglist_pt->init_cond.chamber_pressure;
+        data_t &chbr_temp = this->arglist_pt->init_cond.chamber_temp;
+        data_t &chbr_speed = this->arglist_pt->init_cond.chamber_speed;
+        data_t &chbr_turb_en = this->arglist_pt->init_cond.chamber_turb_en;
+        data_t &chbr_turb_dis = this->arglist_pt->init_cond.chamber_turb_dis;
         
         int middle = this->arglist_pt->nozzle_fitting_init_arg.abscisses[0];
         
@@ -171,13 +171,13 @@ void Nozzle_Profiler::set_init_grad()
 void Nozzle_Profiler::set_init_cond_evol_chamber()
 {
     register int i,j;
-    float &mol_mass = this->arglist_pt->mol_mass;
-    float &atmo_press = this->arglist_pt->init_cond.atmosphere_pressure;
-    float &atmo_temp = this->arglist_pt->init_cond.atmosphere_temp;
-    float &atmo_speed = this->arglist_pt->init_cond.atmosphere_speed;
-    float &atmo_turb_en = this->arglist_pt->init_cond.atmosphere_turb_en;
-    float &atmo_turb_dis = this->arglist_pt->init_cond.atmosphere_turb_dis;
-    float atmo_v_mass = atmo_press * mol_mass / (R * atmo_temp);
+    data_t &mol_mass = this->arglist_pt->mol_mass;
+    data_t &atmo_press = this->arglist_pt->init_cond.atmosphere_pressure;
+    data_t &atmo_temp = this->arglist_pt->init_cond.atmosphere_temp;
+    data_t &atmo_speed = this->arglist_pt->init_cond.atmosphere_speed;
+    data_t &atmo_turb_en = this->arglist_pt->init_cond.atmosphere_turb_en;
+    data_t &atmo_turb_dis = this->arglist_pt->init_cond.atmosphere_turb_dis;
+    data_t atmo_v_mass = atmo_press * mol_mass / (R * atmo_temp);
 
     for (j=0; j<this->arglist_pt->y_size;j++){
             for (i=0; i<this->arglist_pt->x_size; i++){
@@ -314,20 +314,18 @@ void Nozzle_Profiler::one_iteration_evol_chamber()
 
 void Nozzle_Profiler::update_chamber_cond()
 {
-        float &mol_mass = this->arglist_pt->mol_mass;
-        float &atmo_pressure = this->arglist_pt->init_cond.atmosphere_pressure;
-        float &atmo_temperature = this->arglist_pt->init_cond.atmosphere_temp;
-        float atmo_vol_mass = atmo_pressure * mol_mass / (R * atmo_temperature);
-        float &atmo_speed = this->arglist_pt->init_cond.atmosphere_speed;
-        float &atmo_turb_en = this->arglist_pt->init_cond.atmosphere_turb_en;
-        float &atmo_turb_dis = this->arglist_pt->init_cond.atmosphere_turb_dis;
+        data_t &mol_mass = this->arglist_pt->mol_mass;
+        data_t &atmo_pressure = this->arglist_pt->init_cond.atmosphere_pressure;
+        data_t &atmo_temperature = this->arglist_pt->init_cond.atmosphere_temp;
+        data_t &atmo_speed = this->arglist_pt->init_cond.atmosphere_speed;
+        data_t &atmo_turb_en = this->arglist_pt->init_cond.atmosphere_turb_en;
+        data_t &atmo_turb_dis = this->arglist_pt->init_cond.atmosphere_turb_dis;
 
-        float &chbr_pressure = this->arglist_pt->init_cond.chamber_pressure;
-        float &chbr_temperature = this->arglist_pt->init_cond.chamber_temp;
-        float chbr_vol_mass = chbr_pressure * mol_mass / (R * chbr_temperature);
-        float &chbr_speed = this->arglist_pt->init_cond.chamber_speed;
-        float &chbr_turb_en = this->arglist_pt->init_cond.chamber_turb_en;
-        float &chbr_turb_dis = this->arglist_pt->init_cond.chamber_turb_dis;
+        data_t &chbr_pressure = this->arglist_pt->init_cond.chamber_pressure;
+        data_t &chbr_temperature = this->arglist_pt->init_cond.chamber_temp;
+        data_t &chbr_speed = this->arglist_pt->init_cond.chamber_speed;
+        data_t &chbr_turb_en = this->arglist_pt->init_cond.chamber_turb_en;
+        data_t &chbr_turb_dis = this->arglist_pt->init_cond.chamber_turb_dis;
 
         register int i;
         for (i=this->arglist_pt->x_size - 1; not (this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].is_wall); i--){
@@ -337,9 +335,8 @@ void Nozzle_Profiler::update_chamber_cond()
                 this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].temperature = 
                     (chbr_temperature * this->DES->ite_count + atmo_temperature * (this->arglist_pt->iter_number_evol_chamber - this->DES->ite_count) ) 
                     / this->arglist_pt->iter_number_evol_chamber;
-                this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].vol_mass = 
-                    (chbr_vol_mass * this->DES->ite_count + atmo_vol_mass * (this->arglist_pt->iter_number_evol_chamber - this->DES->ite_count) ) 
-                    / this->arglist_pt->iter_number_evol_chamber;
+                this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].vol_mass = this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].pressure * mol_mass 
+                    / ( R * this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].temperature );
                 this->mesh_grid_2[i][this->arglist_pt->y_size -1 ].speed[1] = 
                     (chbr_speed * this->DES->ite_count + atmo_speed * (this->arglist_pt->iter_number_evol_chamber - this->DES->ite_count) ) 
                     / this->arglist_pt->iter_number_evol_chamber;

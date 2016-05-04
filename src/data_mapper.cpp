@@ -49,7 +49,7 @@ void Data_Mapper::write_args()
             << "# --> space_step = " << this->arglist_pt->space_step << endl
             << "# --> CBL_cond = " <<  this->arglist_pt->CFL_cond << endl
             << "# --> iter_number_solver = " <<  this->arglist_pt->iter_number_solver << endl
-            << "# --> iter_number_prothis->filer = " <<  this->arglist_pt->iter_number_profiler << endl
+            << "# --> iter_number_profiler = " <<  this->arglist_pt->iter_number_profiler << endl
             << "# --> nb_of_threads = " <<  this->arglist_pt->nb_of_threads << endl
             << "# --> ->nb_pts = " <<  this->arglist_pt->nozzle_fitting_init_arg.nb_pts << endl;
         
