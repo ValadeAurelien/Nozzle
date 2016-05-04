@@ -678,7 +678,7 @@ data_t Diff_Eq_Solver::heat_flux_x_turb(int i, int j) {
         	return(0);
         }
 	else {
-		return((this->arglist_pt->lambda+lambda_t(i,j))*deriv_x_temp(i,j));
+		return(-(this->arglist_pt->lambda+lambda_t(i,j))*deriv_x_temp(i,j));
 	}
 }
 
@@ -687,7 +687,7 @@ data_t Diff_Eq_Solver::heat_flux_y_turb(int i, int j) {
         	return(0);
         }
 	else {
-		return((this->arglist_pt->lambda+lambda_t(i,j))*deriv_y_temp(i,j));
+		return(-(this->arglist_pt->lambda+lambda_t(i,j))*deriv_y_temp(i,j));
 	}
 }
 
@@ -713,7 +713,7 @@ data_t Diff_Eq_Solver::deriv_x_heat_flux_x_turb(int i, int j) {
 data_t Diff_Eq_Solver::deriv_y_heat_flux_y_turb(int i, int j) {
 	if (is_in(i,j+2) && is_in(i,j-2)) {
 		return(
-		(heat_flux_y_turb(i+1,j)-heat_flux_y_turb(i-1,j))
+		(heat_flux_y_turb(i,j+1)-heat_flux_y_turb(i,j-1))
 		/ (this->arglist_pt->space_step*2)
 		);
 	}
