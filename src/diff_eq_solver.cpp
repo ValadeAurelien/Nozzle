@@ -1096,11 +1096,10 @@ void Diff_Eq_Solver::update_k_PG_turb(int i, int j) {
 
 //l'update de la dissipation turbulente (cartésiennes)
 void Diff_Eq_Solver::update_epsilon_PG_turb(int i, int j) {
-
       mesh_grid_2[i][j].turb_dis = 1./mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_dis+time_step*(c_e_1*mesh_grid_1[i][j].turb_dis/mesh_grid_1[i][j].turb_en*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*turb_stress_xy(i,j)*strain_xy(i,j)) - c_e_2*(1-0.3*exp(-pow(Ret(i,j),2)))*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_dis,2)/mesh_grid_1[i][j].turb_en - diver_rhovepsilon(i,j) + diver_mudepsilon(i,j)));
 }
 
-//petite fonction annexe de copie de ???
+//petite fonction annexe de copie de contenu d'une case de mesh_grid
 void Diff_Eq_Solver::copy_case(int i, int j, int k, int l) {
 
             mesh_grid_2[i][j].vol_mass = mesh_grid_2[k][l].vol_mass;
