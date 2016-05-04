@@ -3,7 +3,7 @@
  *
  *
  *
-*/
+*/ 
 
 
 // ======== includes ======== 
@@ -678,7 +678,7 @@ data_t Diff_Eq_Solver::heat_flux_x_turb(int i, int j) {
         	return(0);
         }
 	else {
-		return((this->arglist_pt->lambda+lambda_t(i,j))*deriv_x_temp(i,j));
+		return(-(this->arglist_pt->lambda+lambda_t(i,j))*deriv_x_temp(i,j));
 	}
 }
 
@@ -687,7 +687,7 @@ data_t Diff_Eq_Solver::heat_flux_y_turb(int i, int j) {
         	return(0);
         }
 	else {
-		return((this->arglist_pt->lambda+lambda_t(i,j))*deriv_y_temp(i,j));
+		return(-(this->arglist_pt->lambda+lambda_t(i,j))*deriv_y_temp(i,j));
 	}
 }
 
@@ -713,7 +713,7 @@ data_t Diff_Eq_Solver::deriv_x_heat_flux_x_turb(int i, int j) {
 data_t Diff_Eq_Solver::deriv_y_heat_flux_y_turb(int i, int j) {
 	if (is_in(i,j+2) && is_in(i,j-2)) {
 		return(
-		(heat_flux_y_turb(i+1,j)-heat_flux_y_turb(i-1,j))
+		(heat_flux_y_turb(i,j+1)-heat_flux_y_turb(i,j-1))
 		/ (this->arglist_pt->space_step*2)
 		);
 	}
@@ -1064,7 +1064,7 @@ void Diff_Eq_Solver::update_temp_VDW_cyl(int i, int j) {
 
 //l'update de la température pour le gaz parfait (cartésiennes)
 void Diff_Eq_Solver::update_temp_PG(int i, int j) {
-	mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,this->mesh_grid_pt1)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+time_step*(this->arglist_pt->lambda*(deriv2_x_temp(i,j)+deriv2_y_temp(i,j))-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j)+diver_vtau(i,j))));
+	mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,this->mesh_grid_pt2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+time_step*(this->arglist_pt->lambda*(deriv2_x_temp(i,j)+deriv2_y_temp(i,j))-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j)+diver_vtau(i,j))));
 }
 
 //l'update de la température pour le gaz parfait (cylindriques)
@@ -1081,7 +1081,7 @@ void Diff_Eq_Solver::update_temp_PG_cyl(int i, int j) {
 }
 //l'update de la température pour le gaz parfait turbulent (cartésiennes)
 void Diff_Eq_Solver::update_temp_PG_turb(int i, int j) { //mise à jour de la température gaz parfait
-        mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,this->mesh_grid_pt1)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+time_step*(diver_heat_flux_turb(i,j)-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j)+diver_vtau_turb(i,j))));
+        mesh_grid_2[i][j].temperature = 2.0/5.0*this->arglist_pt->mol_mass/R*(-1.0/2.0*speed2(i,j,this->mesh_grid_pt2)+1.0/mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*en_tot_PG(i,j)+time_step*(diver_heat_flux_turb(i,j)-deriv_x_prestotPGvx(i,j)-deriv_y_prestotPGvy(i,j)+diver_vtau_turb(i,j))));
 }
 
 //l'update de la pression pour le gaz parfait
@@ -1096,11 +1096,10 @@ void Diff_Eq_Solver::update_k_PG_turb(int i, int j) {
 
 //l'update de la dissipation turbulente (cartésiennes)
 void Diff_Eq_Solver::update_epsilon_PG_turb(int i, int j) {
-
       mesh_grid_2[i][j].turb_dis = 1./mesh_grid_2[i][j].vol_mass*(mesh_grid_1[i][j].vol_mass*mesh_grid_1[i][j].turb_dis+time_step*(c_e_1*mesh_grid_1[i][j].turb_dis/mesh_grid_1[i][j].turb_en*(turb_stress_xx(i,j)*strain_xx(i,j)+turb_stress_yy(i,j)*strain_yy(i,j)+2*turb_stress_xy(i,j)*strain_xy(i,j)) - c_e_2*(1-0.3*exp(-pow(Ret(i,j),2)))*mesh_grid_1[i][j].vol_mass*pow(mesh_grid_1[i][j].turb_dis,2)/mesh_grid_1[i][j].turb_en - diver_rhovepsilon(i,j) + diver_mudepsilon(i,j)));
 }
 
-//petite fonction annexe de copie de ???
+//petite fonction annexe de copie de contenu d'une case de mesh_grid
 void Diff_Eq_Solver::copy_case(int i, int j, int k, int l) {
 
             mesh_grid_2[i][j].vol_mass = mesh_grid_2[k][l].vol_mass;
