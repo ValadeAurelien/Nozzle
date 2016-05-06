@@ -89,6 +89,7 @@ void Data_Mapper::write_args()
 
 void Data_Mapper::create_datafile_from_mesh_grid(Diff_Eq_Solver *DES)
 {
+
         mesh_grid_t &mesh_grid = (*(DES->mesh_grid_pt2));
 
         this->create_directory();
@@ -99,13 +100,13 @@ void Data_Mapper::create_datafile_from_mesh_grid(Diff_Eq_Solver *DES)
         this->write_args();
   
         this->file << "# Maximums (asbolute values) after " << DES->ite_count + 1 << " iterations: " << endl
-            << "# pressure = " << setprecision(PRECISION) << DES->variables_max.pressure[DES->ite_count -1] << endl
-            << "# temperature = " << setprecision(PRECISION) << DES->variables_max.temperature[DES->ite_count -1] << endl
-            << "# vol_mass = " << setprecision(PRECISION) << DES->variables_max.vol_mass[DES->ite_count -1] << endl
-            << "# speed0 = " << setprecision(PRECISION) << DES->variables_max.speed0[DES->ite_count -1] << endl
-            << "# speed1 = " << setprecision(PRECISION) << DES->variables_max.speed1[DES->ite_count -1] << endl
-            << "# turb_en = " << setprecision(PRECISION) << DES->variables_max.turb_en[DES->ite_count -1] << endl
-            << "# turb_dis = " << setprecision(PRECISION) << DES->variables_max.turb_dis[DES->ite_count -1] << endl
+            << "# pressure = " << setprecision(PRECISION) << DES->variables_max.pressure[DES->ite_count] << endl
+            << "# temperature = " << setprecision(PRECISION) << DES->variables_max.temperature[DES->ite_count] << endl
+            << "# vol_mass = " << setprecision(PRECISION) << DES->variables_max.vol_mass[DES->ite_count] << endl
+            << "# speed0 = " << setprecision(PRECISION) << DES->variables_max.speed0[DES->ite_count] << endl
+            << "# speed1 = " << setprecision(PRECISION) << DES->variables_max.speed1[DES->ite_count] << endl
+            << "# turb_en = " << setprecision(PRECISION) << DES->variables_max.turb_en[DES->ite_count] << endl
+            << "# turb_dis = " << setprecision(PRECISION) << DES->variables_max.turb_dis[DES->ite_count] << endl
             << endl;
 
         this->file << "#" << setw(WIDTH) << "x" << setw(WIDTH) << "y"
