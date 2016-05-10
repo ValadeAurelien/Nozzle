@@ -2,4 +2,5 @@ boum boum dans les oreilles... rien a dire !
 
 ceci est un test ! 
 
-plot "meshgrid_581_ite.data" u 2:(-$1):($8/2000):((-$7)/2000):(l($7,$8)) with vectors filled lc palette
+plot "meshgrid_581_ite.data" every 2:2 u 2:(-$1):($8/1000):((-$7)/1000):(l($7,$8)) with vectors filled lc palette
+
