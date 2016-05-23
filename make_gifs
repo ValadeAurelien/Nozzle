@@ -1,0 +1,137 @@
+#! /bin/bash
+2>/dev/null
+
+
+if [[ ($# -ne 1) || ("$1" == "-h") -- ("$1" == "--help") ]]
+then 
+        echo "make_gifs fabrique les gifs et les png"
+        echo "make_gifs nom_experience"
+        echo "/!\ ne pas mettre de .arg"
+fi
+
+
+
+
+#function set_cbrange_vol_mass {
+#        line1=$(sed "${3}q;d" ./datafiles/$1/meshgrid_"$2"_ite.data)
+#        line2=$(sed "${4}q;d" ./datafiles/$1/meshgrid_"$2"_ite.data)
+#        line3=$(sed "${5}q;d" ./datafiles/$1/meshgrid_"$2"_ite.data)
+#        line4=$(sed "${6}q;d" ./datafiles/$1/meshgrid_"$2"_ite.data)
+#        val1=${($line1)[3]}
+#        val2=${($line2)[3]}
+#        val3=${($line3)[3]}
+#        val4=${($line4)[3]}
+#}
+
+
+function set_cbrange {
+        line1=$(sed "${3}q;d" ./datafiles/$1/meshgrid_"$2"_ite.data)
+        line2=$(sed "${4}q;d" ./datafiles/$1/meshgrid_"$2"_ite.data)
+        tmp1=($line1)
+        tmp2=($line2)
+        val1=${tmp1[4]}
+        val2=${tmp2[4]}
+        val1=$(echo $val1 | sed -e 's/[eE]+*/\*10\^/')
+        val2=$(echo $val2 | sed -e 's/[eE]+*/\*10\^/')
+
+        if [ $(echo "$val1<$val2" | bc -l) ] 
+        then
+                val1=$(echo $val1 | sed -e 's/\^/**/')
+                val2=$(echo $val2 | sed -e 's/\^/**/')
+                
+                if [ $# -le 4 ]
+                then
+                        echo "set cbrange [$val1:$val2]" >> .gnuplot.config
+                else
+                        echo "set cbrange [($5($val1)):($5($val2))]" >> .gnuplot.config
+                fi
+        fi
+}
+
+function write_line {
+        echo "splot \"./datafiles/$1/meshgrid_"$2"_ite.data\" u 2:(-\$1):$3 , \"./datafiles/$1/meshgrid_"$2"_ite.data\" u 2:( \$3==1 ? (-\$1) : 1/0 ):(0.0) with points linecolor rgb 'white' t \"$4\" "  >> .gnuplot.config
+}
+
+
+function write_file {
+        nb_ite=$(seq -f "%0"$max"g" $2 $2) 
+
+        echo "set output \"./datafiles/$1/"$nb_ite"_ite_"$4".png\" " >> .gnuplot.config
+        write_line $1 $2 $3 $4
+        echo "" >> .gnuplot.config
+}
+
+function make_gif {
+        convert -delay 20 -loop 0 ./datafiles/$1/*_ite_"$2".png ./datafiles/$1/"$2".gif
+}
+
+function move {
+        echo $((plus + $1))
+}
+
+
+
+
+
+
+echo "Writing gnuplot configuration file..."
+
+
+line=$(sed "9q;d" ./datafiles/$1/temporal_stuff_*_ite.data)
+tmp=($line)
+max=${tmp[4]}
+max=${#max}
+
+line=$(sed "12q;d" ./datafiles/$1/temporal_stuff_*_ite.data)
+tmp=($line)
+nb_pts=${tmp[4]}
+plus=$(($nb_pts*2))
+
+touch .gnuplot.config
+
+echo "set term pngcairo" > .gnuplot.config
+echo "set term png giant" >> .gnuplot.config
+echo "set pm3d map" >> .gnuplot.config
+echo "unset key" >> .gnuplot.config
+echo "" >> .gnuplot.config
+
+for meshgrid in ./datafiles/$1/meshgrid_*
+do
+        tmp=${meshgrid#*_}
+        num=${tmp%_*}
+        set_cbrange $1 $num $(move 27) $(move 22)
+        write_file $1 $num "4" "pressure"  
+        
+        set_cbrange $1 $num $(move 28) $(move 23)
+        write_file $1 $num "5" "temperature"  
+        
+#        echo "set cbrange [.7:1.3]" >> .gnuplot.config
+        write_file $1 $num "6" "vol_mass"  
+        
+        set_cbrange $1 $num $(move 29) $(move 37)
+        write_file $1 $num "7" "speed0"  
+        
+        set_cbrange $1 $num $(move 29) $(move 38)
+        write_file $1 $num "(-\$8)" "minus_speed1"  
+        
+        set_cbrange $1 $num $(move 30) $(move 39) "log"
+        write_file $1 $num "(log(\$9))" "turb_en"  
+        
+        set_cbrange $1 $num $(move 31) $(move 40) "log"
+        write_file $1 $num "(log(\$10))" "turb_dis"  
+done
+
+echo "Gnuplotting..."
+
+gnuplot < .gnuplot.config
+
+
+echo "Making the gifs"
+
+make_gif $1 "pressure"
+make_gif $1 "temperature"
+make_gif $1 "vol_mass"
+make_gif $1 "speed0"
+make_gif $1 "minus_speed1"
+make_gif $1 "turb_en"
+make_gif $1 "turb_dis"

@@ -1,0 +1,36 @@
+#! /bin/bash
+
+
+if [[ ("$1" == "-h") || ($# -eq 0) ]]
+then
+        echo "help : get datafiles from lethe.cpb.ens"
+        echo "--> No args : displays help"
+        echo "--> First arg : experimentation name (without .arg) "
+        echo "--> Second arg [ all | gif | png | tmp | data ] : synchronize all files | .gif files | .png files | temporal_stuff.data | .data files"
+fi
+
+if [ "$2" == "all" ]
+then
+        rsync lethe.cbp.ens:/home/avalade/Nozzle/datafiles/$1/* ~/Desktop/Code/C++/Nozzle/datafiles/$1 -r
+fi
+
+if [ "$2" == "gif" ]
+then
+        rsync lethe.cbp.ens:/home/avalade/Nozzle/datafiles/$1/*.gif ~/Desktop/Code/C++/Nozzle/datafiles/$1/
+fi
+
+if [ "$2" == "png" ]
+then
+        rsync lethe.cbp.ens:/home/avalade/Nozzle/datafiles/$1/*.png ~/Desktop/Code/C++/Nozzle/datafiles/$1/
+fi
+
+if [ "$2" == "tmp" ]
+then
+        rsync lethe.cbp.ens:/home/avalade/Nozzle/datafiles/$1/temporal_stuff_* ~/Desktop/Code/C++/Nozzle/datafiles/$1/
+fi
+
+if [ "$2" == "data" ]
+then
+        rsync lethe.cbp.ens:/home/avalade/Nozzle/datafiles/$1/*.data ~/Desktop/Code/C++/Nozzle/datafiles/$1/
+fi
+

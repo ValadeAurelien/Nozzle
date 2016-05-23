@@ -1,0 +1,97 @@
+#! /bin/bash
+
+ls datafiles/$1 | grep meshgrid | column -t 
+
+echo "which one? (number of iteration)"
+
+read ite_nb
+
+echo "#gnuplot config to plot meshgrid datas" > .gnuplot_config
+
+if [ "$#" -lt 2 ]
+then
+    echo "You need some help..."
+    echo "plot_meshgrid <data_dir>"
+    echo "              [pressure|temperature|vol_mass|speed0 (r)|speed1 (-z)|speed_vec|turb_en|turb_dis]" 
+    echo "              <max>"
+    echo "              <min>"
+    exit 1
+fi
+
+if [[ ("$2" == "-h") || ("$2" == "--help") ]]
+then
+    echo "You asked for help..."
+    echo "plot_meshgrid <data_dir>"
+    echo "              [pressure|temperature|vol_mass|speed0 (r)|speedz (-z)|speed_vec|turb_en|turb_dis]" 
+    echo "              <max>"
+    echo "              <min>"
+    exit 1
+fi
+
+if [ "$2" == "speed_vec" ]
+then 
+    echo "plot \"./datafiles/$1/meshgrid_"$ite_nb"_ite.data\" u 2:(-\$1)"
+fi
+
+
+echo "set pm3d map" >> .gnuplot_config
+echo -n "splot \"./datafiles/$1/meshgrid_"$ite_nb"_ite.data\" u 2:(-\$1):" >> .gnuplot_config
+
+if [ "$2" == "pressure" ]
+then 
+    echo -n "4" >> .gnuplot_config
+fi
+
+if [ "$2" == "temperature" ]
+then 
+    echo -n "5" >> .gnuplot_config
+fi
+
+if [ "$2" == "vol_mass" ]
+then 
+    echo -n "6" >> .gnuplot_config
+fi
+
+if [ "$2" == "speed0" ]
+then 
+    echo -n "7" >> .gnuplot_config
+fi
+
+if [ "$2" == "speed1" ]
+then
+    echo -n "(-\$8)" >> .gnuplot_config
+fi
+
+if [ "$2" == "turb_en" ]
+then 
+    echo -n "9" >> .gnuplot_config
+fi
+
+if [ "$2" == "turb_dis" ]
+then 
+    echo -n "10" >> .gnuplot_config
+fi
+
+echo " , \"./datafiles/$1/meshgrid_"$ite_nb"_ite.data\" u 2:( \$3==1 ? (-\$1) : 1/0 ):(0.0) with points linecolor rgb 'white' t \"$2\""  >> .gnuplot_config
+echo "set cbrange [$3:$4]" >> .gnuplot_config
+echo "pause mouse" >> .gnuplot_config
+
+gnuplot < .gnuplot_config
+
+echo "Open Gnuplot interactively ? (y/n)"
+echo "Don't forget to load .gnuplot_config"
+
+while :
+do
+        read -t 1 -n 1 key
+        if [[ $key = y ]]
+        then
+               gnuplot 
+               break
+        fi
+        if [[ ($key = n) || ($key = q) ]]
+        then
+                echo
+                break
+        fi
+done
